@@ -1,12 +1,18 @@
 import pygame
 
+
+
+
+
 class Entity:
     def __init__(self, position, collisionDetection, hitboxes, displayImages):
         self.position = position
         self.detectCollision = collisionDetection
         self.hitboxes = hitboxes
         self.displayImages = displayImages
-        self.currentImage = 0
+    def render(self,screen):
+        for i in self.displayImages:
+            screen.blit(i[0],i[1])
 
 class Player(Entity):
     def __init__(self, position, hp, maxhp, detectCollision, hitboxes, displayImages,speed):
@@ -56,3 +62,8 @@ class EntityHandler:
         for element in self.elements:
             if isinstance(element,Entity):
                 element.update()
+    def renderEntities(self,screen):
+        if pygame.display.get_init():
+            for element in self.elements:
+                if isinstance(element,Entity):
+                    element.render(screen)
