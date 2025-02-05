@@ -1,8 +1,5 @@
 import pygame
-
-
-
-
+import math
 
 class Entity:
     def __init__(self, position, collisionDetection, hitboxes, displayImages):
@@ -13,6 +10,11 @@ class Entity:
     def render(self,screen):
         for i in self.displayImages:
             screen.blit(i[0],i[1])
+    def checkCollisions(self,objects):
+        for i in self.hitboxes:
+            if i.Rect.collidelist(objects):
+                return True
+        return False
 
 class Player(Entity):
     def __init__(self, position, hp, maxhp, detectCollision, hitboxes, displayImages,speed):
@@ -24,11 +26,7 @@ class Player(Entity):
         diff = pygame.mouse.get_pos()
         translation = [diff[i]-self.position[i]%(self.speed/fps) for i in [0,1]]
         self.position = [self.position[i]+translation[i] for i in [0,1]]
-    def checkCollisions(self,objects):
-        for i in self.hitboxes:
-            if i.Rect.collidelist(objects):
-                return True
-        return False
+
 
 class Projectile(Entity):
     def __init__(self, startingMomentum, position, hitboxes, collisionDetection, displayImages,friendly,impactDeath,speed):
@@ -37,6 +35,9 @@ class Projectile(Entity):
         self.friendly = friendly
         self.dieOnImpact = impactDeath
         self.speed = speed
+    def update(self,fps,collisionCheck):
+        self.position = [self.position[x]-self.momentum[x]/fps for x in (0,1)]
+        if self.checkCollisions()
 
 class EntityHandler:
     def __init__(self):
