@@ -1,15 +1,28 @@
 import pygame
 import math
 
+
+
+import global_vars
+
+def renderGeneric(images,screen,color=(0,0,0),rectRadius=0,rectBorder=0):
+    for i in images:
+        match i[0]:
+            case 'image':
+                screen.blit(i[1])
+            case 'rect':
+                pygame.draw.rect(global_vars.screen,color,i[1],rectBorder,rectRadius)
+
+
 class Entity:
-    def __init__(self, position, collisionDetection, hitboxes, displayImages):
+    def __init__(self, position, collisionDetection, hitboxes, displayImages):#DisplayImages need to be like ['circle',actual data]
         self.position = position
         self.detectCollision = collisionDetection
         self.hitboxes = hitboxes
         self.displayImages = displayImages
     def render(self,screen):
         for i in self.displayImages:
-            screen.blit(i[0],i[1])
+            renderGeneric(self.displayImages,screen)
     def checkCollisions(self,objects):
         for i in self.hitboxes:
             if i.Rect.collidelist(objects):
@@ -35,9 +48,14 @@ class Projectile(Entity):
         self.friendly = friendly
         self.dieOnImpact = impactDeath
         self.speed = speed
-    def update(self,fps,collisionCheck):
+    def update(self,fps):
         self.position = [self.position[x]-self.momentum[x]/fps for x in (0,1)]
-        if self.checkCollisions()
+    def liveCheck(self,collisionWith):
+        if self.dieOnImpact:
+            for i in self.hitboxes:
+                if i.collidelist(collisionWith):
+                    return False
+        return True
 
 class EntityHandler:
     def __init__(self):
