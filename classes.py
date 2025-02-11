@@ -5,13 +5,19 @@ import math
 
 import global_vars
 
-def renderGeneric(images,screen,color=(0,0,0),rectRadius=0,rectBorder=0):
+class Circle:
+    def __init__(self,center,radius):
+        self.center
+
+def renderGeneric(images,color=(0,0,0),radius=0,border=0):
     for i in images:
         match i[0]:
             case 'image':
-                screen.blit(i[1])
+                global_vars.screen.blit(i[1])
             case 'rect':
-                pygame.draw.rect(global_vars.screen,color,i[1],rectBorder,rectRadius)
+                pygame.draw.rect(global_vars.screen,color,i[1],border,radius)
+            case 'circle':
+                pygame.draw.circle(global_vars.screen,color,i[1],radius,border)
 
 
 class Entity:
@@ -20,9 +26,8 @@ class Entity:
         self.detectCollision = collisionDetection
         self.hitboxes = hitboxes
         self.displayImages = displayImages
-    def render(self,screen):
-        for i in self.displayImages:
-            renderGeneric(self.displayImages,screen)
+    def render(self):
+        renderGeneric(self.displayImages)
     def checkCollisions(self,objects):
         for i in self.hitboxes:
             if i.Rect.collidelist(objects):
@@ -30,8 +35,8 @@ class Entity:
         return False
 
 class Player(Entity):
-    def __init__(self, position, hp, maxhp, detectCollision, hitboxes, displayImages,speed):
-        super().__init__(position, detectCollision, hitboxes, displayImages)
+    def __init__(self, position, hp, maxhp, hitboxes, displayImages,speed):
+        super().__init__(position, True, hitboxes, displayImages)
         self.hp = hp
         self.maxhp = maxhp
         self.speed = speed
@@ -81,8 +86,8 @@ class EntityHandler:
         for element in self.elements:
             if isinstance(element,Entity):
                 element.update()
-    def renderEntities(self,screen):
+    def renderEntities(self):
         if pygame.display.get_init():
             for element in self.elements:
                 if isinstance(element,Entity):
-                    element.render(screen)
+                    element.render()
