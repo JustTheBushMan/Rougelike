@@ -5,9 +5,13 @@ import math
 
 import global_vars
 
-class Circle:
-    def __init__(self,center,radius):
-        self.center
+class Image:
+    def __init__(self,imageType,image):
+        self.type = imageType
+        self.image = image
+
+class Picture(Image):
+    def __init__(self):
 
 def renderGeneric(images,color=(0,0,0),radius=0,border=0):
     for i in images:
