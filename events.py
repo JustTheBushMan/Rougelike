@@ -6,5 +6,9 @@ class EventHandler:
     def advanceTick(self):
         self.tick += 1
         del self.events[self.tick-10]
+    def addEvent(self,event):
+        if type(self.events[self.tick]) is None:
+            self.events[self.tick] = []
+        self.events[self.tick].append(event)
 
 eventHandler = EventHandler()

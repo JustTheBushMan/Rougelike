@@ -2,6 +2,7 @@ import pygame
 
 dimensions = pygame.display.get_window_size()
 pygame.display.init()
+pygame.font.init()
 screen = pygame.display.set_mode(dimensions)
 pygame.display.set_caption("Game")
 
