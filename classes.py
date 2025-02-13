@@ -129,11 +129,7 @@ class ClassEntityHandler:
 
 class EntityHandler:
     def __init__(self):
-        self.classes = {
-            'player': ClassEntityHandler(),
-            'enemy': ClassEntityHandler(),
-            'projectile': ClassEntityHandler(),
-        }
+        self.classes = {}
     def update(self):
         for i in self.classes:
             self.classes[i].updateClassEntities()
@@ -143,3 +139,8 @@ class EntityHandler:
     def collideChecks(self):
         for i in self.classes:
             self.classes[i].checkCollisions()
+    def add(self,entity):
+        cls = str(type(entity))
+        if type(self.classes[cls]) is None:
+            self.classes[cls] = ClassEntityHandler()
+        self.classes[cls].add(entity,self.classes[cls].availableIndexes[0])
