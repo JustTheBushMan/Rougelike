@@ -5,7 +5,7 @@ import events
 import global_vars
 
 class Image:
-    def __init__(self,imageType,image):
+    def __init__(self,imageType,image=0):
         self.type = imageType
         self.image = image
     def render(self):
@@ -38,16 +38,31 @@ class CircleImage(Image):
     def render(self):
         pygame.draw.circle(global_vars.screen,self.color,self.center,self.radius,self.border)
 
+class TriangleImage(Image):
+    def __init__(self,coords,color,border=0):
+        super().__init__('triangle')
+        self.coords = coords
+        self.color = color
+        self.border = border
+    def render(self):
+        pygame.draw.polygon(global_vars.screen,self.color,self.coords,self.border)
+
 class Text(Image):
     def __init__(self,text,font,size,position,color):
         self.text = text
         self.size = size
         self.color = color
         self.font = pygame.font.Font(font,self.size)
-        super().__init__('text',pygame.font.Font(font,self.size))
+        super().__init__('text')
         self.position = position
     def render(self):
         global_vars.screen.blit(self.font.render(self.text,True,self.color),self.position)
+
+def detectCollision(object,handler):
+    match object:
+        case Projectile:
+            for handlerClass in object.collideWith:
+                for element in handler.classes[handlerClass]:
 
 
 
@@ -69,6 +84,10 @@ class Entity:
                             for hitbox in self.hitboxes:
                                 if hitbox.collidelist(elmt.hitboxes) != -1:
                                     events.eventHandler.addEvent(['collision',index,elmt])
+                case Enemy:
+
+
+
 
 
 class Player(Entity):
@@ -83,21 +102,18 @@ class Player(Entity):
         self.position = [self.position[i]+translation[i] for i in [0,1]]
 
 
+
+
 class Projectile(Entity):
-    def __init__(self, startingMomentum, position, hitboxes, collisionDetection, displayImages,friendly,impactDeath,speed):
+    def __init__(self, startingMomentum, position, hitboxes, collisionDetection, displayImages,collideWith,impactDeath,speed):
         super().__init__(position, collisionDetection, hitboxes, displayImages)
         self.momentum = startingMomentum
-        self.friendly = friendly
+        self.collideWith = collideWith
         self.dieOnImpact = impactDeath
         self.speed = speed
     def update(self,fps):
         self.position = [self.position[x]-self.momentum[x]/fps for x in (0,1)]
-    def liveCheck(self,collisionWith):
-        if self.dieOnImpact:
-            for i in self.hitboxes:
-                if i.collidelist(collisionWith):
-                    return False
-        return True
+
 
 class ClassEntityHandler:
     def __init__(self):
