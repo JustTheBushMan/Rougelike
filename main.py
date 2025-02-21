@@ -1,5 +1,4 @@
 import pygame
-import pyautogui
 import classes
 import events
 import global_vars
@@ -21,7 +20,7 @@ background.fill((0, 0, 20))
 
 prev_cursor_pos = None
 flicker_start = None
-
+    
 while True:
 
     pygame.event.pump()

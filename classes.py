@@ -107,6 +107,7 @@ class Cursor:
         self.width = global_vars.CURSOR_WIDTH
         self.position = (0,0)
     def render(self):
+        pygame.draw.circle(global_vars.screen,(100,0,0),self.position,10)
         pygame.draw.line(global_vars.screen,self.color,math_functions.vectAdd(self.position,[self.distance,self.distance]),math_functions.vectAdd(self.position,[self.size,self.size]),self.width)
         pygame.draw.line(global_vars.screen,self.color,math_functions.vectAdd(self.position,[-self.distance,self.distance]),math_functions.vectAdd(self.position,[-self.size,self.size]),self.width)
         pygame.draw.line(global_vars.screen,self.color,math_functions.vectAdd(self.position,[-self.distance,-self.distance]),math_functions.vectAdd(self.position,[-self.size,-self.size]),self.width)
