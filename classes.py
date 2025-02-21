@@ -1,8 +1,10 @@
+import pyautogui
 import pygame
 import math
-
 import events
 import global_vars
+import math_functions
+
 
 class Image:
     def __init__(self,imageType,image=0):
@@ -37,6 +39,7 @@ class CircleImage(Image):
         self.color = color
     def render(self):
         pygame.draw.circle(global_vars.screen,self.color,self.center,self.radius,self.border)
+        pygame.display.flip()
 
 class TriangleImage(Image):
     def __init__(self,coords,color,border=0):
@@ -63,7 +66,11 @@ def detectCollision(object,handler):
         case Projectile:
             for handlerClass in object.collideWith:
                 for element in handler.classes[handlerClass]:
-
+                    for hitbox in object.hitboxes:
+                        if hitbox.collidelist(element.hitboxes) != -1:
+                            events.eventHandler.addEvent(['collision',object.hitAttributes,element])
+                            return True
+    return False
 
 
 class Entity:
@@ -72,10 +79,11 @@ class Entity:
         self.detectCollision = collisionDetection
         self.hitboxes = hitboxes
         self.displayImages = displayImages
+        self.index = (None,None)
     def render(self):
         for i in self.displayImages:
             i.render()
-    def checkCollisions(self,index,handler):
+    def checkCollisions(self,handler):
         if self.detectCollision:
             match type(self):
                 case Projectile:
@@ -83,12 +91,28 @@ class Entity:
                         for elmt in cls.elements:
                             for hitbox in self.hitboxes:
                                 if hitbox.collidelist(elmt.hitboxes) != -1:
-                                    events.eventHandler.addEvent(['collision',index,elmt])
-                case Enemy:
+                                    events.eventHandler.addEvent(['collision',self.index,elmt.index])
+                                    return
+
+def getMouseRel():
+    return pygame.mouse.get_rel()
 
 
 
-
+class Cursor:
+    def __init__(self):
+        self.color = (170,150,255)
+        self.size = global_vars.CURSOR_SIZE
+        self.distance = global_vars.CURSOR_DISTANCE
+        self.width = global_vars.CURSOR_WIDTH
+        self.position = (0,0)
+    def render(self):
+        pygame.draw.line(global_vars.screen,self.color,math_functions.vectAdd(self.position,[self.distance,self.distance]),math_functions.vectAdd(self.position,[self.size,self.size]),self.width)
+        pygame.draw.line(global_vars.screen,self.color,math_functions.vectAdd(self.position,[-self.distance,self.distance]),math_functions.vectAdd(self.position,[-self.size,self.size]),self.width)
+        pygame.draw.line(global_vars.screen,self.color,math_functions.vectAdd(self.position,[-self.distance,-self.distance]),math_functions.vectAdd(self.position,[-self.size,-self.size]),self.width)
+        pygame.draw.line(global_vars.screen,self.color,math_functions.vectAdd(self.position,[self.distance,-self.distance]),math_functions.vectAdd(self.position,[self.size,-self.size]),self.width)
+    def update(self,fps):
+        self.position = pygame.mouse.get_pos()
 
 class Player(Entity):
     def __init__(self, position, hp, maxhp, hitboxes, displayImages,speed):
@@ -97,12 +121,9 @@ class Player(Entity):
         self.maxhp = maxhp
         self.speed = speed
     def update(self,fps):
-        diff = pygame.mouse.get_pos()
+        diff = getMouseRel()
         translation = [diff[i]-self.position[i]%(self.speed/fps) for i in [0,1]]
         self.position = [self.position[i]+translation[i] for i in [0,1]]
-
-
-
 
 class Projectile(Entity):
     def __init__(self, startingMomentum, position, hitboxes, collisionDetection, displayImages,collideWith,impactDeath,speed):
@@ -113,7 +134,6 @@ class Projectile(Entity):
         self.speed = speed
     def update(self,fps):
         self.position = [self.position[x]-self.momentum[x]/fps for x in (0,1)]
-
 
 class ClassEntityHandler:
     def __init__(self):
@@ -135,20 +155,26 @@ class ClassEntityHandler:
                 self.elements.append('empty')
                 self.availableIndexes.append(len(self.elements)-1)
         for element in self.elements:
-            if isinstance(element,Entity):
-                element.update()
+            if element != 'empty':
+                element.update(20)
     def renderEntities(self):
         if pygame.display.get_init():
             for element in self.elements:
                 if isinstance(element,Entity):
+                    for pic in element.displayImages:
+                        pic.render()
+                elif isinstance(element,Cursor):
                     element.render()
 
 class EntityHandler:
     def __init__(self):
-        self.classes = {}
+        self.classes = {
+            'Player':ClassEntityHandler(),
+            'Cursor':ClassEntityHandler()
+        }
     def update(self):
-        for i in self.classes:
-            self.classes[i].updateClassEntities()
+        for i in self.classes.values():
+            i.updateClassEntities()
     def render(self):
         for i in self.classes:
             self.classes[i].renderEntities()
@@ -156,7 +182,6 @@ class EntityHandler:
         for i in self.classes:
             self.classes[i].checkCollisions()
     def add(self,entity):
-        cls = str(type(entity))
-        if type(self.classes[cls]) is None:
-            self.classes[cls] = ClassEntityHandler()
+        cls = type(entity).__name__
+        entity.index = (cls,self.classes[cls].availableIndexes[0])
         self.classes[cls].add(entity,self.classes[cls].availableIndexes[0])
