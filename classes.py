@@ -1,8 +1,8 @@
-import pyautogui
 import pygame
 import math
 import events
 import global_vars
+import main
 import math_functions
 
 
@@ -20,6 +20,16 @@ class Picture(Image):
     def render(self):
         global_vars.screen.blit(self.image,self.position)
 
+class LineImage(Image):
+    def __init__(self,image,start,end,color,border=0):
+        super().__init__('line',image)
+        self.start = start
+        self.end = end
+        self.color = color
+        self.border = border
+    def render(self):
+        pygame.draw.line(global_vars.screen,self.color,self.start,self.end,self.border)
+
 class RectImage(Image):
     def __init__(self,image,rect,color,radius,border=0):
         super().__init__('rect',image)
@@ -33,13 +43,12 @@ class RectImage(Image):
 class CircleImage(Image):
     def __init__(self,image,center,radius,color,border=0):
         super().__init__('circle',image)
-        self.center = center
+        self.center = tuple((float(i) for i in center))
         self.radius = radius
         self.border = border
         self.color = color
     def render(self):
         pygame.draw.circle(global_vars.screen,self.color,self.center,self.radius,self.border)
-        pygame.display.flip()
 
 class TriangleImage(Image):
     def __init__(self,coords,color,border=0):
@@ -99,21 +108,27 @@ def getMouseRel():
 
 
 
-class Cursor:
+class Cursor(Entity):
     def __init__(self):
-        self.color = (170,150,255)
+        super().__init__([0,0],False,[],[])
+        self.color = (66,16,126)
         self.size = global_vars.CURSOR_SIZE
         self.distance = global_vars.CURSOR_DISTANCE
         self.width = global_vars.CURSOR_WIDTH
-        self.position = (0,0)
-    def render(self):
-        pygame.draw.circle(global_vars.screen,(100,0,0),self.position,10)
-        pygame.draw.line(global_vars.screen,self.color,math_functions.vectAdd(self.position,[self.distance,self.distance]),math_functions.vectAdd(self.position,[self.size,self.size]),self.width)
-        pygame.draw.line(global_vars.screen,self.color,math_functions.vectAdd(self.position,[-self.distance,self.distance]),math_functions.vectAdd(self.position,[-self.size,self.size]),self.width)
-        pygame.draw.line(global_vars.screen,self.color,math_functions.vectAdd(self.position,[-self.distance,-self.distance]),math_functions.vectAdd(self.position,[-self.size,-self.size]),self.width)
-        pygame.draw.line(global_vars.screen,self.color,math_functions.vectAdd(self.position,[self.distance,-self.distance]),math_functions.vectAdd(self.position,[self.size,-self.size]),self.width)
+        self.angle = 0
     def update(self,fps):
         self.position = pygame.mouse.get_pos()
+        self.displayImages = []
+        self.angle += 40/fps
+        self.angle = self.angle%360
+        for a in (0,90,180,270):
+            start = math_functions.rotate(math_functions.vectAdd(self.position, [self.distance, self.distance]),self.angle + a, self.position)
+            end = math_functions.rotate(math_functions.vectAdd(self.position, [self.size, self.size]), self.angle + a,self.position)
+            self.displayImages.append(LineImage(0, start, end, self.color, self.width))
+
+
+
+
 
 class Player(Entity):
     def __init__(self, position, hp, maxhp, hitboxes, displayImages,speed):
@@ -121,10 +136,20 @@ class Player(Entity):
         self.hp = hp
         self.maxhp = maxhp
         self.speed = speed
+    def getMovement(self):
+        keys = pygame.key.get_pressed()
+        x = keys[pygame.K_d]-keys[pygame.K_a]
+        y = keys[pygame.K_s]-keys[pygame.K_w]
+        if x != 0 and y != 0:
+            x/=1.44
+            y/=1.44
+        return [x*self.speed,y*self.speed]
     def update(self,fps):
-        diff = getMouseRel()
-        translation = [diff[i]-self.position[i]%(self.speed/fps) for i in [0,1]]
-        self.position = [self.position[i]+translation[i] for i in [0,1]]
+        diff = self.getMovement()
+        self.position = [self.position[0]+diff[0]/fps,self.position[1]+diff[1]/fps]
+        self.position = [max(global_vars.PLAYER_RADIUS,min(self.position[0],global_vars.DIMENSIONS[0]-global_vars.PLAYER_RADIUS)),max(global_vars.PLAYER_RADIUS,min(self.position[1],global_vars.DIMENSIONS[1]-global_vars.PLAYER_RADIUS))]
+        self.displayImages = [CircleImage(0,[self.position[0],self.position[1]],global_vars.PLAYER_RADIUS,global_vars.PLAYER_COLOR,0)]
+
 
 class Projectile(Entity):
     def __init__(self, startingMomentum, position, hitboxes, collisionDetection, displayImages,collideWith,impactDeath,speed):
@@ -136,6 +161,25 @@ class Projectile(Entity):
     def update(self,fps):
         self.position = [self.position[x]-self.momentum[x]/fps for x in (0,1)]
 
+class Gun:
+    def __init__(self,fireRate,projectile,angle,displayImages,speed):
+        self.fireRate = fireRate
+        self.projectile = projectile
+        self.speed = speed
+        self.displayImages = displayImages
+        self.projectile.momentum = math_functions.rotate(self.projectile.momentum,angle, [0,0])
+        self.projectile.speed *= self.speed
+        self.angle = angle
+        self.displayImages = displayImages
+        self.cooldown = 0
+    def getShoot(self):
+        return pygame.mouse.get_pressed()
+    def update(self,fps):
+        self.cooldown = max(self.cooldown-1/fps,0)
+        if self.cooldown == 0 and self.getShoot()[0]:
+            self.cooldown = self.fireRate
+            main.entityHandler.add(self.projectile)
+
 class ClassEntityHandler:
     def __init__(self):
         self.elements = ['empty']
@@ -143,10 +187,18 @@ class ClassEntityHandler:
     def add(self,element,index):
         self.elements[index] = element
         self.availableIndexes.remove(index)
+        for i in range(len(self.elements)):
+            if self.elements[i] == 'empty':
+                self.availableIndexes.append(i)
+            elif i in self.availableIndexes:
+                self.availableIndexes.remove(i)
+            if len(self.availableIndexes) == 0:
+                self.elements.append('empty')
+                self.availableIndexes.append(len(self.elements)-1)
     def remove(self,index):
         self.elements[index] = 'empty'
         self.availableIndexes.append(index)
-    def updateClassEntities(self):
+    def updateClassEntities(self,fps):
         for i in range(len(self.elements)):
             if self.elements[i] == 'empty':
                 self.availableIndexes.append(i)
@@ -157,15 +209,13 @@ class ClassEntityHandler:
                 self.availableIndexes.append(len(self.elements)-1)
         for element in self.elements:
             if element != 'empty':
-                element.update(20)
+                element.update(fps)
     def renderEntities(self):
         if pygame.display.get_init():
             for element in self.elements:
                 if isinstance(element,Entity):
                     for pic in element.displayImages:
                         pic.render()
-                elif isinstance(element,Cursor):
-                    element.render()
 
 class EntityHandler:
     def __init__(self):
@@ -173,9 +223,9 @@ class EntityHandler:
             'Player':ClassEntityHandler(),
             'Cursor':ClassEntityHandler()
         }
-    def update(self):
+    def update(self,fps):
         for i in self.classes.values():
-            i.updateClassEntities()
+            i.updateClassEntities(fps)
     def render(self):
         for i in self.classes:
             self.classes[i].renderEntities()

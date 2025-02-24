@@ -1,3 +1,5 @@
+import math
+
 import pygame
 
 def hitboxesFromCircle(center,radius):
@@ -5,3 +7,7 @@ def hitboxesFromCircle(center,radius):
 
 def vectAdd(vect1,vect2):
     return [vect1[0]+vect2[0],vect1[1]+vect2[1]]
+
+def rotate(point, angle, center):
+    angle = math.radians(angle)
+    return [center[0] + (point[0] - center[0]) * math.cos(angle) - (point[1] - center[1]) * math.sin(angle), center[1] + (point[0] - center[0]) * math.sin(angle) + (point[1] - center[1]) * math.cos(angle)]
