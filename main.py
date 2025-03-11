@@ -19,9 +19,6 @@ playerGun = classes.Gun(.2,bulletPic,60,10)
 cursor = classes.Cursor()
 player = classes.Player(playerPos,global_vars.PLAYER_HP,global_vars.PLAYER_HP,playerBox,playerPics,global_vars.PLAYER_SPEED,playerGun)
 
-
-
-
 pygame.mouse.set_visible(False)
 
 classes.entityManager.add(player)

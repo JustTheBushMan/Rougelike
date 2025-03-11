@@ -98,7 +98,6 @@ class DisplayImages: # a list of lists of images and state call [[state1,[img1,i
         for i in range(len(images)):
             self.__dict__[images[i][0]] = images[i][1]
 
-
 def translateImage(image,translation):
     match type(image).__name__:
         case 'Picture' | 'Text':
@@ -185,6 +184,7 @@ class Player(Entity):
         if self.dash > 0:
             translation = self.dashMomentum
         translation = [translation[0]+self.knockbackMomentum[0],translation[1]+self.knockbackMomentum[1]]
+        translation = [translation[0]/fps,translation[1]/fps]
         translation = [
             max(global_vars.PLAYER_RADIUS,min(self.position[0]+translation[0],global_vars.DIMENSIONS[0]-global_vars.PLAYER_RADIUS))-self.position[0],
             max(global_vars.PLAYER_RADIUS,min(self.position[1]+translation[1],global_vars.DIMENSIONS[1]-global_vars.PLAYER_RADIUS))-self.position[1]
@@ -195,12 +195,20 @@ class Player(Entity):
         self.gun.update(fps,self.position)
 
 class Enemy(Entity):
-    def __init__(self,position,displayImages,hitboxes,speed,playerTargetDistance,health):
+    def __init__(self,position,displayImages,hitboxes,speed,playerTargetDistance,health,radius):
         super().__init__(position,False,hitboxes,displayImages)
         self.speed = speed
         self.playerTargetDistance = playerTargetDistance
         self.maxHealth = health
         self.health = health
+        self.radius = radius
+    def update(self,fps):
+        player = entityManager.classes['Player'][0].position
+        translation = math_functions.normalizeVect([player.position[0]-self.position[0],player.position[1]-self.position[1]])
+        translation = [
+            max(self.radius,min(self.position[0]+translation[0],global_vars.DIMENSIONS[0]-self.radius))-self.position[0],
+            max(self.radius,min(self.position[1]+translation[1],global_vars.DIMENSIONS[1]-self.radius))-self.position[1]
+        ]
 
 class Projectile(Entity):
     def __init__(self, startingMomentum, position, hitboxes, collisionDetection, displayImages,collideWith,impactDeath):
