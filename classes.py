@@ -128,6 +128,7 @@ class Entity:
         self.detectCollision = collisionDetection
         self.hitboxes = hitboxes
         self.displayImages = displayImages
+        self.address = None
     def render(self):
         for i in self.displayImages:
             i.render()
@@ -242,34 +243,35 @@ class Gun:
 
 class ClassEntityHandler:
     def __init__(self):
-        self.elements = []
+        self.elements = {}
         self.usedIndexes = []
     def getIndex(self):
-        while True:
-            newIndex = random.randint(0,len(self.elements))
-            if newIndex not in self.usedIndexes:
-                return newIndex
+        num = 0
+        while num in self.usedIndexes:
+            num+=1
+        return num
     def add(self,element):
         newIndex = self.getIndex()
-        self.elements.append([newIndex,element])
+        self.elements[newIndex] = element
+        element.address = newIndex
         self.usedIndexes.append(newIndex)
     def remove(self,index):
-        for i in self.elements:
-            if i[0] == index:
-                self.elements.remove(i)
-                self.usedIndexes.remove(index)
-                break
+        del self.elements[index]
+        self.usedIndexes.remove(index)
     def updateClassEntities(self,fps):
-        for element in self.elements:
-            element[1].update(fps)
-            if hasattr(element[1],'kill'):
-                if element[1].kill:
-                    self.remove(element[0])
+        scheduleKill = []
+        for element in self.elements.values():
+            element.update(fps)
+            if hasattr(element,'kill'):
+                if element.kill:
+                    scheduleKill.append(element.address)
+        for x in scheduleKill:
+            del self.elements[x]
     def renderEntities(self):
         if pygame.display.get_init():
-            for element in self.elements:
-                if isinstance(element[1],Entity):
-                    for pic in element[1].displayImages:
+            for element in self.elements.values():
+                if isinstance(element,Entity):
+                    for pic in element.displayImages:
                         pic.render()
 
 class EntityHandler:
