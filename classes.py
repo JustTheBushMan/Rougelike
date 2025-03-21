@@ -1,5 +1,8 @@
 import copy
+import math
 import random
+
+
 import pygame
 import global_vars
 import math_functions
@@ -93,10 +96,23 @@ class Bar(Image):
         pygame.draw.rect(global_vars.screen,self.baseColor,self.rect,self.border,0,self.rect[3]/2)
         pygame.draw.rect(global_vars.screen,self.insideColor,(self.rect[0]+self.border,self.rect[1]+self.border,self.rect[2]*self.ratio-self.border*2,self.rect[3]-self.border*2),0,(self.rect[3]-self.border)/2)
 
-class DisplayImages: # a list of lists of images and state call [[state1,[img1,img2,img3]],[state2,[img1,img2]]]
-    def __init__(self,images):
+class DisplayImage: # a list of lists of images and state call [[state1,[img1,img2,img3]],[state2,[img1,img2]]]
+    def __init__(self,images,currentState):
+        self.state = currentState
+        self.imgs = {}
         for i in range(len(images)):
-            self.__dict__[images[i][0]] = images[i][1]
+            self.imgs[images[i][0]] = images[i][1]
+        self.imgs['none'] = []
+    def render(self):
+        for img in self.imgs[self.state]:
+            img.render()
+    def translate(self,translation):
+            for key in self.imgs.keys():
+                for img in self.imgs[key]:
+                    translateImage(img,translation)
+
+
+
 
 def translateImage(image,translation):
     match type(image).__name__:
@@ -121,17 +137,37 @@ def translateImage(image,translation):
                 i[0] += translation[0]
                 i[1] += translation[1]
 
+def translateHitbox(hitbox,translation):
+    hitbox[0] += translation[0]
+    hitbox[1] += translation[1]
+
 class Entity:
     def __init__(self, position, collisionDetection, hitboxes, displayImages):#DisplayImages need to be like ['circle',actual data]
         self.position = position
         self.detectCollision = collisionDetection
         self.hitboxes = hitboxes
         self.displayImages = displayImages
+        self.address = None
+        self.kill = False
     def render(self):
         for i in self.displayImages:
             i.render()
-    def checkCollisions(self,handler):
-        return
+    def checkCollisions(self):
+        classes = None
+        otherBoxes = []
+        if classes is None:
+            classes = entityManager.classes
+        for cls in classes:
+            for entity in entityManager.classes[cls].elements:
+                if isinstance(entity,Entity):
+                    for box in entity.hitboxes:
+                        otherBoxes.append(box)
+        returns = []
+        for ownBox in self.hitboxes:
+            for otherBox in otherBoxes:
+                if ownBox.colliderect(otherBox):
+                    returns.append([type(otherBox).__name__,otherBox.address])
+        return returns
 
 class Cursor(Entity):
     def __init__(self):
@@ -192,15 +228,23 @@ class Player(Entity):
         self.position = [self.position[0]+translation[0],self.position[1]+translation[1]]
         for i in self.displayImages:
             translateImage(i,translation)
+        for box in self.hitboxes:
+            box.x += translation[0]
+            box.y += translation[1]
         self.gun.update(fps,self.position)
 
 class Enemy(Entity):
+<<<<<<< HEAD
     def __init__(self,position,displayImages,hitboxes,speed,playerTargetDistance,health,radius):
+=======
+    def __init__(self,position,hitboxes,displayImages,speed,playerTargetDistance,health,lamdas):
+>>>>>>> c3e783508e0fa63cbad6b42237bd2d0efabbdd36
         super().__init__(position,False,hitboxes,displayImages)
         self.speed = speed
         self.playerTargetDistance = playerTargetDistance
         self.maxHealth = health
         self.health = health
+<<<<<<< HEAD
         self.radius = radius
     def update(self,fps):
         player = entityManager.classes['Player'][0].position
@@ -209,21 +253,106 @@ class Enemy(Entity):
             max(self.radius,min(self.position[0]+translation[0],global_vars.DIMENSIONS[0]-self.radius))-self.position[0],
             max(self.radius,min(self.position[1]+translation[1],global_vars.DIMENSIONS[1]-self.radius))-self.position[1]
         ]
+=======
+        self.hitBy = []
+        self.dict = {}
+        self.stateFor = 0
+        self.lamdas = lamdas
+        self.knockback = 0
+    def update(self, fps):
+        self.stateFor = max(0, self.stateFor - 1 / fps)
+        if self.stateFor == 0:
+            self.displayImages.state = 'normal'
+        if self.health <= 0:
+            self.kill = True
+        playerPos = entityManager.classes['Player'].elements[0].position
+        xyDiff = [playerPos[0] - self.position[0], playerPos[1] - self.position[1]]
+        zDistance = math.sqrt(xyDiff[0] ** 2 + xyDiff[1] ** 2)
+        direction = [xyDiff[0] / zDistance, xyDiff[1] / zDistance]
+        distanceToMove = zDistance - self.playerTargetDistance
+        if self.knockback > 0:
+            self.knockback -= 1
+            speedMultiplier = -3
+        elif distanceToMove < 0:
+            direction = [-direction[0], -direction[1]]  # move away if too close
+            speedMultiplier = 0.5  # move at half speed when moving away
+        else:
+            speedMultiplier = 1.0
+        momentum = [direction[0] * min(abs(distanceToMove), self.speed / fps * speedMultiplier),
+                    direction[1] * min(abs(distanceToMove), self.speed / fps * speedMultiplier)]
+        self.position = [self.position[0] + momentum[0], self.position[1] + momentum[1]]
+        self.displayImages.translate(momentum)
+        for box in self.hitboxes:
+            translateHitbox(box,momentum)
+        for x in 0,1:
+            mom = [0,0]
+            if self.position[x] < 30:
+                mom[x] = 30-self.position[x]
+                self.position[x] = 30
+            elif self.position[x] > global_vars.DIMENSIONS[x]-30:
+                mom[x] = global_vars.DIMENSIONS[x] - self.position[x] -30
+                self.position[x] = global_vars.DIMENSIONS[x]-30
+            self.displayImages.translate(mom)
+            for box in self.hitboxes:
+                translateHitbox(box,mom)
+            self.checkCollisions()
+    def checkCollisions(self):
+        for i in self.hitBy:
+            i[1] -= .03
+            if i[1] <= 0:
+                del i
+        for entity in entityManager.classes["Projectile"].elements.values():
+            if type(entity).__name__ == "Projectile":
+                if entity.friendly and entity.address not in [i[0] for i in self.hitBy]:
+                    for box in entity.hitboxes:
+                        if box.collidelist(self.hitboxes) != -1:
+                            self.knockback = 3
+                            self.displayImages.state="hit"
+                            self.stateFor = 1
+                            self.health -= entity.damage
+                            self.hitBy.append([entity.address,2])
+        for entity in entityManager.classes["Player"].elements.values():
+            if type(entity).__name__ == "Player":
+                for box in entity.hitboxes:
+                    if box.collidelist(self.hitboxes) != -1:
+                        self.knockback = 3
+>>>>>>> c3e783508e0fa63cbad6b42237bd2d0efabbdd36
 
 class Projectile(Entity):
-    def __init__(self, startingMomentum, position, hitboxes, collisionDetection, displayImages,collideWith,impactDeath):
+    def __init__(self, startingMomentum, position, hitboxes, collisionDetection, displayImages,friendly,impactDeath):
         super().__init__(position, collisionDetection, hitboxes, displayImages)
         self.momentum = startingMomentum
-        self.collideWith = collideWith
+        self.friendly = friendly
         self.dieOnImpact = impactDeath
-        self.val = random.randint(0,100)
-        self.kill = False
+        self.damage = 1
     def update(self,fps):
-        for pic in self.displayImages:
-            pic.center = self.position
         self.position = [self.position[x]-self.momentum[x]/fps for x in (0,1)]
         if self.position[0] // global_vars.DIMENSIONS[0] != 0 or self.position[1] // global_vars.DIMENSIONS[1] != 0:
             self.kill = True
+        for box in self.hitboxes:
+            translateHitbox(box,[-self.momentum[0]/fps,-self.momentum[1]/fps])
+        self.displayImages.translate([-self.momentum[0]/fps,-self.momentum[1]/fps])
+        print(self.position,self.displayImages.imgs['normal'][0].center)
+        self.checkCollisions()
+    def checkCollisions(self):
+        if self.dieOnImpact:
+            otherBoxes = []
+            match self.friendly:
+                case True:
+                    classes = ["Enemy"]
+                case False:
+                    classes = ["Player"]
+                case None | _ :
+                    classes = []
+            for cls in classes:
+                for entity in entityManager.classes[cls].elements.values():
+                    if isinstance(entity,Entity):
+                        for box in entity.hitboxes:
+                            otherBoxes.append(box)
+            for ownBox in self.hitboxes:
+                if ownBox.collidelist(otherBoxes)!=-1:
+                    self.displayImages.state = 'none'
+                    self.kill = True
 
 class Gun:
     def __init__(self,fireRate,displayImages,bulletSpeed,speedMod):
@@ -245,47 +374,54 @@ class Gun:
             movement = [-movement[0],-movement[1]]
             movement = math_functions.rotate(movement,random.randint(-self.spread,self.spread),pos)
             newPos = [pos[0] - movement[0]/12, pos[1] - movement[1]/12]
-            bullet = Projectile(movement, newPos, [], False, self.displayImages, [], False)
+            image = DisplayImage([['normal',[CircleImage(newPos,10,[255,255,255],0)]]],'normal')
+            bullet = Projectile(movement, newPos, math_functions.hitboxesFromCircle(newPos,self.displayImages[0].radius), False, image, True, True)
             entityManager.add(copy.deepcopy(bullet))
 
 class ClassEntityHandler:
     def __init__(self):
-        self.elements = []
+        self.elements = {}
         self.usedIndexes = []
     def getIndex(self):
-        while True:
-            newIndex = random.randint(0,len(self.elements))
-            if newIndex not in self.usedIndexes:
-                return newIndex
+        num = 0
+        while num in self.usedIndexes:
+            num+=1
+        return num
     def add(self,element):
         newIndex = self.getIndex()
-        self.elements.append([newIndex,element])
+        self.elements[newIndex] = element
+        element.address = newIndex
         self.usedIndexes.append(newIndex)
     def remove(self,index):
-        for i in self.elements:
-            if i[0] == index:
-                self.elements.remove(i)
-                self.usedIndexes.remove(index)
-                break
+        del self.elements[index]
+        self.usedIndexes.remove(index)
     def updateClassEntities(self,fps):
-        for element in self.elements:
-            element[1].update(fps)
-            if hasattr(element[1],'kill'):
-                if element[1].kill:
-                    self.remove(element[0])
+        scheduleKill = []
+        for element in self.elements.values():
+            element.update(fps)
+            if element.kill:
+                scheduleKill.append(element.address)
+        for x in scheduleKill:
+            del self.elements[x]
     def renderEntities(self):
         if pygame.display.get_init():
-            for element in self.elements:
-                if isinstance(element[1],Entity):
-                    for pic in element[1].displayImages:
-                        pic.render()
+            for element in self.elements.values():
+                if isinstance(element,Entity):
+                    match type(element.displayImages).__name__:
+                        case 'DisplayImage':
+                            element.displayImages.render()
+                        case 'list':
+                            for pic in element.displayImages:
+                                pic.render()
 
 class EntityHandler:
     def __init__(self):
         self.classes = {
             'Player':ClassEntityHandler(),
+            'Enemy': ClassEntityHandler(),
             'Projectile':ClassEntityHandler(),
-            'Cursor': ClassEntityHandler()
+            'Cursor': ClassEntityHandler(),
+            'Explosion': ClassEntityHandler()
         }
     def update(self,fps):
         for i in self.classes.values():
@@ -293,12 +429,86 @@ class EntityHandler:
     def render(self):
         for i in self.classes:
             self.classes[i].renderEntities()
-    def collideChecks(self):
-        for i in self.classes:
-            self.classes[i].checkCollisions()
     def add(self,entity):
         cls = type(entity).__name__
         self.classes[cls].add(entity)
+
+def i0(self,fps):
+    pass
+
+def i1(self,fps):
+    pass
+
+def i2(self,fps):
+    pass
+
+
+def r1(self,fps):
+    pass
+
+
+def r2(self,fps):
+    pass
+
+
+def t(self,fps):
+    pass
+
+
+def l(self,fps):
+    pass
+
+
+def b1(self,fps):
+    pass
+
+
+def b2(self,fps):
+    pass
+
+
+def b3(self,fps):
+    pass
+
+
+def h(self,fps):
+    pass
+
+
+def i0i(pos):
+    return DisplayImage(
+        [
+            ['normal',[
+                CircleImage(pos,30,[255,0,255],0),
+                CircleImage(pos,30,[170,0,170],3),
+            ],
+             'hit',[
+                CircleImage(pos,30,[255,100,255],0),
+                CircleImage(pos,30,[170,60,170],3),
+             ]
+             ]
+        ]
+    )
+
+i1 = i1
+i2 = i2
+r1 = r1
+r2 = r2
+t = t
+l = l
+b1 = b1
+b2 = b2
+b3 = b3
+h = h
+
+
+
+
+
+
+
+
+
 
 ##########################################################################################################
 
