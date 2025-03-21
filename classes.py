@@ -137,6 +137,35 @@ def translateImage(image,translation):
                 i[0] += translation[0]
                 i[1] += translation[1]
 
+
+class Hitboxes:
+    def __init__(self,center,boxes):
+        self.center = center
+        self.boxes = []
+    def collideCheck(self,hitbox):
+        for box in self.boxes:
+            if box.collidelist([i for i in hitbox.boxes]):
+                return True
+        return False
+    def recenter(self,pos):
+        self.center = pos
+        for box in self.boxes:
+            box.center = self.center
+    def translate(self,translation):
+        for box in self.boxes:
+            box.move(translation[0],translation[1])
+
+class CircleHitboxes(Hitboxes):
+    def __init__(self, center, radius):
+        boxes = [
+            pygame.Rect(0,0,radius,radius*2),
+            pygame.Rect(0,0,radius*2,radius),
+            pygame.Rect(0,0,radius*1.5,radius*1.5)
+        ]
+        super().__init__(center, boxes)
+
+             
+
 def translateHitbox(hitbox,translation):
     hitbox[0] += translation[0]
     hitbox[1] += translation[1]
@@ -234,26 +263,12 @@ class Player(Entity):
         self.gun.update(fps,self.position)
 
 class Enemy(Entity):
-<<<<<<< HEAD
-    def __init__(self,position,displayImages,hitboxes,speed,playerTargetDistance,health,radius):
-=======
     def __init__(self,position,hitboxes,displayImages,speed,playerTargetDistance,health,lamdas):
->>>>>>> c3e783508e0fa63cbad6b42237bd2d0efabbdd36
         super().__init__(position,False,hitboxes,displayImages)
         self.speed = speed
         self.playerTargetDistance = playerTargetDistance
         self.maxHealth = health
         self.health = health
-<<<<<<< HEAD
-        self.radius = radius
-    def update(self,fps):
-        player = entityManager.classes['Player'][0].position
-        translation = math_functions.normalizeVect([player.position[0]-self.position[0],player.position[1]-self.position[1]])
-        translation = [
-            max(self.radius,min(self.position[0]+translation[0],global_vars.DIMENSIONS[0]-self.radius))-self.position[0],
-            max(self.radius,min(self.position[1]+translation[1],global_vars.DIMENSIONS[1]-self.radius))-self.position[1]
-        ]
-=======
         self.hitBy = []
         self.dict = {}
         self.stateFor = 0
@@ -316,7 +331,6 @@ class Enemy(Entity):
                 for box in entity.hitboxes:
                     if box.collidelist(self.hitboxes) != -1:
                         self.knockback = 3
->>>>>>> c3e783508e0fa63cbad6b42237bd2d0efabbdd36
 
 class Projectile(Entity):
     def __init__(self, startingMomentum, position, hitboxes, collisionDetection, displayImages,friendly,impactDeath):
