@@ -49,9 +49,7 @@ while True:
     fps = clock.get_fps() if clock.get_fps() != 0 else 30
     pygame.event.pump()
     classes.entityManager.update(fps)
-    classes.entityManager.collideChecks()
     screen.blit(background, (0, 0))
     classes.entityManager.render()
-    pygame.draw.rect(global_vars.screen, (255, 0, 0),  classes.entityManager.classes["Player"].elements[0].hitboxes[1],1)
     pygame.display.flip()
 
