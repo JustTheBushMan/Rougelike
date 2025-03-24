@@ -19,7 +19,7 @@ CURSOR_WIDTH = 5
 
 wave = 0
 
-RENDER_HITBOXES = False
+RENDER_HITBOXES = True
 
 def scale(image,scaleFactor):
     return pygame.transform.scale(image,(int(image.get_width()*scaleFactor),int(image.get_height()*scaleFactor)))
@@ -27,13 +27,13 @@ def scale(image,scaleFactor):
 
 
 
-SPRITE_BASE_PATH = r'C:\Users\IanSt\Downloads\Pygame Sprites'
+#SPRITE_BASE_PATH = r'C:\Users\IanSt\Downloads\Pygame Sprites'
 
-HEART = pygame.image.load(SPRITE_BASE_PATH + r'\heart.png')
-HEART = scale(HEART,4)
+#HEART = pygame.image.load(SPRITE_BASE_PATH + r'\heart.png')
+#HEART = scale(HEART,4)
 
-DEAD_HEART = pygame.image.load(SPRITE_BASE_PATH + r'\deadheart.png')
-DEAD_HEART = scale(DEAD_HEART,4)
+#DEAD_HEART = pygame.image.load(SPRITE_BASE_PATH + r'\deadheart.png')
+#DEAD_HEART = scale(DEAD_HEART,4)
 
 
 

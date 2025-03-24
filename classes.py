@@ -489,6 +489,7 @@ class EntityHandler:
 def i1(self,fps):
     pass
 
+
 def i2(self,fps):
     pass
 
@@ -559,6 +560,28 @@ radii = {
 
 }
 
+#todo
+speeds = { 
+    'i1': 100,
+    'i2': 100,
+    'r1': 100,
+    'r2': 100,
+    't': 100,
+    'h' : 100,
+    'l': 100
+}
+
+#todo
+target = { 
+    'i1': 0,
+    'i2': 0,
+    'r1': 0,
+    'r2': 0,
+    't': 0,
+    'h' : 0,
+    'l': 0
+}
+
 i1 = i1
 i2 = i2
 r1 = r1
@@ -602,7 +625,7 @@ def wave():
             if pos not in usedPositions:
                 usedPositions.append(pos)
                 break
-        enemy = Enemy(pos,)
+        enemy = Enemy(pos,math_functions.hitboxesFromCircle(pos,radii[i]),eval(f'{i}i({pos})'),speeds[i],target[i],)
         entityManager.add()
 
 
