@@ -1,4 +1,5 @@
 import math
+import global_vars
 
 import pygame
 
@@ -28,3 +29,8 @@ def mixColors(colorsAndWeights):
 def normalizeVect(vect,maxDist):
     dist = pythag(vect,[0,0])
     return [vect[0]/dist*maxDist,vect[1]/dist*maxDist]
+
+def bound(pos,radius):
+    x = max(radius,min(pos[0],global_vars.DIMENSIONS[0]-radius))
+    y = max(radius,min(pos[1],global_vars.DIMENSIONS[1]-radius))
+    return [x,y]

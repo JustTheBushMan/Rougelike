@@ -1,7 +1,7 @@
 import copy
 import math
 import random
-
+from symtable import Class
 
 import pygame
 import global_vars
@@ -12,7 +12,7 @@ class Image:
         print('No Data in Image')
 
 class Picture(Image):
-    def __init__(self,image,position):
+    def __init__(self,position,image):
         self.position = position
         self.image = image
     def render(self):
@@ -111,9 +111,6 @@ class DisplayImage: # a list of lists of images and state call [[state1,[img1,im
                 for img in self.imgs[key]:
                     translateImage(img,translation)
 
-
-
-
 def translateImage(image,translation):
     match type(image).__name__:
         case 'Picture' | 'Text':
@@ -137,7 +134,6 @@ def translateImage(image,translation):
                 i[0] += translation[0]
                 i[1] += translation[1]
 
-
 class Hitboxes:
     def __init__(self,center,boxes):
         self.center = center
@@ -158,8 +154,6 @@ class Hitboxes:
         for box in self.boxes:
             pygame.draw.rect(global_vars.screen,(255,0,0),box,1,1)
 
-
-
 class CircleHitboxes(Hitboxes):
     def __init__(self, center, radius):
         boxes = [
@@ -168,8 +162,6 @@ class CircleHitboxes(Hitboxes):
             pygame.Rect(0,0,radius*1.5,radius*1.5)
         ]
         super().__init__(center, boxes)
-
-             
 
 def translateHitbox(hitbox,translation):
     hitbox[0] += translation[0]
@@ -203,6 +195,36 @@ class Entity:
                 if ownBox.colliderect(otherBox):
                     returns.append([type(otherBox).__name__,otherBox.address])
         return returns
+
+class Hearts(Entity):
+    def __init__(self):
+        positions = [
+            [20,1010],
+            [20,940],
+            [20,870]
+        ]
+        image = DisplayImage( [
+            [3,[Picture(positions[0],global_vars.HEART),Picture(positions[1],global_vars.HEART),Picture(positions[2],global_vars.HEART)]],
+            [2,[Picture(positions[0],global_vars.HEART),Picture(positions[1],global_vars.HEART),Picture(positions[2],global_vars.DEAD_HEART)]],
+            [1,[Picture(positions[0],global_vars.HEART),Picture(positions[1],global_vars.DEAD_HEART),Picture(positions[2],global_vars.DEAD_HEART)]]
+        ],3 )
+        super().__init__([0,0], False, Hitboxes([0,0],[]), image)
+    def update(self,fps):
+        self.displayImages.state = entityManager.classes["Player"].elements[0].hp
+
+
+class Burst(Entity):
+    def __init__(self, position,startRadius,color):
+        super().__init__(position, False, Hitboxes(position,[]), None)
+        self.radius = startRadius
+        self.speed = 1
+        self.color = color
+    def update(self,fps):
+        self.radius += self.speed/fps*300
+        self.speed *= .85
+        if self.speed < .05:
+            self.kill = True
+        self.displayImages = DisplayImage( [['normal',[CircleImage(self.position,self.radius,self.color,5)]]],'normal')
 
 class Cursor(Entity):
     def __init__(self):
@@ -285,6 +307,7 @@ class Enemy(Entity):
             self.displayImages.state = 'normal'
         if self.health <= 0:
             self.kill = True
+            entityManager.add(Burst(self.position, 10, self.displayImages.imgs['normal'][0].color))
         playerPos = entityManager.classes['Player'].elements[0].position
         xyDiff = [playerPos[0] - self.position[0], playerPos[1] - self.position[1]]
         zDistance = math.sqrt(xyDiff[0] ** 2 + xyDiff[1] ** 2)
@@ -334,6 +357,11 @@ class Enemy(Entity):
             if type(entity).__name__ == "Player":
                     if self.hitboxes.collideCheck(entity.hitboxes):
                         self.knockback = 10
+        for entity in entityManager.classes["Enemy"].elements.values():
+            if type(entity).__name__ == "Enemy" and entity != self:
+                    if self.hitboxes.collideCheck(entity.hitboxes):
+                        self.position = math_functions.vectAdd(self.position,math_functions.normalizeVect([self.position[0]-entity.position[0],self.position[1]-entity.position[1]],10))
+                    self.position = math_functions.bound(self.position,self.hitboxes.boxes[0].width)
 
 class Projectile(Entity):
     def __init__(self, startingMomentum, position, hitboxes, collisionDetection, displayImages,friendly,impactDeath):
@@ -441,8 +469,9 @@ class EntityHandler:
             'Player':ClassEntityHandler(),
             'Projectile': ClassEntityHandler(),
             'Enemy': ClassEntityHandler(),
+            'Burst': ClassEntityHandler(),
             'Cursor': ClassEntityHandler(),
-            'Explosion': ClassEntityHandler()
+            'Hearts': ClassEntityHandler()
         }
     def update(self,fps):
         for i in self.classes.values():
@@ -456,8 +485,6 @@ class EntityHandler:
         cls = type(entity).__name__
         self.classes[cls].add(entity)
 
-def i0(self,fps):
-    pass
 
 def i1(self,fps):
     pass
@@ -478,10 +505,6 @@ def t(self,fps):
     pass
 
 
-def l(self,fps):
-    pass
-
-
 def b1(self,fps):
     pass
 
@@ -497,34 +520,90 @@ def b3(self,fps):
 def h(self,fps):
     pass
 
+def l(self,fps):
+    pass
 
-def i0i(pos):
+def i1i(pos):
     return DisplayImage(
         [
             ['normal',[
-                CircleImage(pos,30,[255,0,255],0),
-                CircleImage(pos,30,[170,0,170],3),
+                CircleImage(pos,20,[0,255,255],0),
+                CircleImage(pos,20,[0,170,170],3),
             ],
              'hit',[
-                CircleImage(pos,30,[255,100,255],0),
-                CircleImage(pos,30,[170,60,170],3),
+                CircleImage(pos,20,[100,255,255],0),
+                CircleImage(pos,20,[60,170,170],3),
              ]
              ]
-        ]
+        ],'normal'
     )
+
+def i2i(pos):
+    return DisplayImage(
+        [
+            ['normal', [
+                CircleImage(pos, 40, [0, 255, 255], 0),
+                CircleImage(pos, 40, [0, 170, 170], 3),
+            ],
+             'hit', [
+                 CircleImage(pos, 40, [100, 255, 255], 0),
+                 CircleImage(pos, 40, [60, 170, 170], 3),
+             ]
+             ]
+        ],'normal'
+    )
+
+radii = {
+    'i1': 20,
+    'i2': 40
+
+}
 
 i1 = i1
 i2 = i2
 r1 = r1
 r2 = r2
 t = t
-l = l
 b1 = b1
 b2 = b2
 b3 = b3
 h = h
+l = l
 
-
+def wave():
+    waveNum = global_vars.wave
+    probList = ['i1','i1','i2','r1','r1','r2','t','l','h']
+    spawnPoints = 7
+    pointVals = {
+        'i1': 1,
+        'i2': 2,
+        'r1': 1,
+        'r2': 2,
+        't': 3,
+        'h' : 2,
+        'l': 3
+    }
+    spawns = []
+    usedPositions = []
+    positions = [[320,270],[640,135],[960,135],[1280,135],[1600,270],[160,540],[1760,540],[320,810],[640,945],[960,945],[1280,945],[1600,810]]
+    for i in positions:
+        if math_functions.pythag(i,entityManager.classes["Player"].elements[0].position) <= 300:
+            usedPositions.append(i)
+    while spawnPoints > 0:
+        pick = random.choice(probList)
+        if pointVals[pick] > spawnPoints:
+            continue
+        else:
+            spawns.append(pick)
+            spawnPoints -= pointVals[pick]
+    for i in spawns:
+        while True:
+            pos = random.choice(usedPositions)
+            if pos not in usedPositions:
+                usedPositions.append(pos)
+                break
+        enemy = Enemy(pos,)
+        entityManager.add()
 
 
 
