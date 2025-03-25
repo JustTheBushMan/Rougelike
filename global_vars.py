@@ -27,13 +27,13 @@ def scale(image,scaleFactor):
 
 
 
-#SPRITE_BASE_PATH = r'C:\Users\IanSt\Downloads\Pygame Sprites'
+SPRITE_BASE_PATH = r'C:\Users\IanSt\PycharmProjects\Rougelike\Rougelike Sprites'
 
-#HEART = pygame.image.load(SPRITE_BASE_PATH + r'\heart.png')
-#HEART = scale(HEART,4)
+HEART = pygame.image.load(SPRITE_BASE_PATH + r'\heart.png')
+HEART = scale(HEART,4)
 
-#DEAD_HEART = pygame.image.load(SPRITE_BASE_PATH + r'\deadheart.png')
-#DEAD_HEART = scale(DEAD_HEART,4)
+DEAD_HEART = pygame.image.load(SPRITE_BASE_PATH + r'\deadheart.png')
+DEAD_HEART = scale(DEAD_HEART,4)
 
 
 

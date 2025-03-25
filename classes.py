@@ -473,11 +473,20 @@ class EntityHandler:
             'Cursor': ClassEntityHandler(),
             'Hearts': ClassEntityHandler()
         }
+        self.waveCooldown = -1
     def update(self,fps):
+        print(self.waveCooldown)
         for i in self.classes.values():
             i.updateClassEntities(fps)
         for i in self.classes.values():
             i.killCheck()
+        if self.classes['Enemy'].elements == {} and self.waveCooldown == -1:
+            self.waveCooldown = 5
+        if self.waveCooldown == 0:
+            self.waveCooldown = -1
+            wave()
+        if self.waveCooldown != -1:
+            self.waveCooldown = max(self.waveCooldown - 1 / fps, 0)
     def render(self):
         for i in self.classes:
             self.classes[i].renderEntities()
@@ -528,12 +537,12 @@ def i1i(pos):
     return DisplayImage(
         [
             ['normal',[
-                CircleImage(pos,20,[0,255,255],0),
-                CircleImage(pos,20,[0,170,170],3),
+                CircleImage(pos,30,[0,255,255],0),
+                CircleImage(pos,30,[0,170,170],3),
             ],
              'hit',[
-                CircleImage(pos,20,[100,255,255],0),
-                CircleImage(pos,20,[60,170,170],3),
+                CircleImage(pos,30,[100,255,255],0),
+                CircleImage(pos,30,[60, 200, 200],3),
              ]
              ]
         ],'normal'
@@ -548,15 +557,98 @@ def i2i(pos):
             ],
              'hit', [
                  CircleImage(pos, 40, [100, 255, 255], 0),
-                 CircleImage(pos, 40, [60, 170, 170], 3),
+                 CircleImage(pos, 40, [60, 200, 200], 3),
              ]
              ]
         ],'normal'
     )
 
+def r1i(pos):
+    return DisplayImage(
+        [
+            ['normal', [
+                CircleImage(pos, 30, [100, 20, 100], 0),
+                CircleImage(pos, 30, [70, 10, 70], 3),
+            ],
+             'hit', [
+                 CircleImage(pos, 30, [150, 30, 150], 0),
+                 CircleImage(pos, 30, [110, 20, 110], 3),
+             ]
+             ]
+        ],'normal'
+    )
+
+def r2i(pos):
+    return DisplayImage(
+        [
+            ['normal', [
+                CircleImage(pos, 40, [100, 20, 100], 0),
+                CircleImage(pos, 40, [70, 10, 70], 3),
+            ],
+             'hit', [
+                 CircleImage(pos, 40, [150, 30, 150], 0),
+                 CircleImage(pos, 40, [110, 20, 110], 3),
+             ]
+             ]
+        ],'normal'
+    )
+
+def ti(pos):
+    return DisplayImage(
+        [
+            ['normal', [
+                CircleImage(pos, 50, [120, 20, 20], 0),
+                CircleImage(pos, 50, [80, 10, 80], 3),
+            ],
+             'hit', [
+                 CircleImage(pos, 50, [180, 40, 180], 0),
+                 CircleImage(pos, 50, [120, 20, 20], 3),
+             ]
+             ]
+        ],'normal'
+    )
+
+def hi(pos):
+    return DisplayImage(
+        [
+            ['normal', [
+                CircleImage(pos, 30, [50, 100, 90], 0),
+                CircleImage(pos, 30, [30, 80, 70], 3),
+            ],
+             'hit', [
+                 CircleImage(pos, 30, [80, 130, 120], 0),
+                 CircleImage(pos, 30, [50, 100, 90], 3),
+             ]
+             ]
+        ],'normal'
+    )
+
+def li(pos):
+    return DisplayImage(
+        [
+            ['normal', [
+                CircleImage(pos, 20, [200, 0, 140], 0),
+                CircleImage(pos, 20, [150, 0, 90], 3),
+            ],
+             'hit', [
+                 CircleImage(pos, 20, [250, 0, 190], 0),
+                 CircleImage(pos, 20, [200, 0, 140], 3),
+             ]
+             ]
+        ],'normal'
+    )
+
+
+
+
 radii = {
-    'i1': 20,
-    'i2': 40
+    'i1': 30,
+    'i2': 40,
+    'r1': 30,
+    'r2': 40,
+    't': 50,
+    'h' : 30,
+    'l': 20
 
 }
 
@@ -582,6 +674,17 @@ target = {
     'l': 0
 }
 
+#todo
+hp = {
+    'i1': 3,
+    'i2': 3,
+    'r1': 3,
+    'r2': 3,
+    't': 3,
+    'h' : 3,
+    'l': 3
+}
+
 i1 = i1
 i2 = i2
 r1 = r1
@@ -594,7 +697,6 @@ h = h
 l = l
 
 def wave():
-    waveNum = global_vars.wave
     probList = ['i1','i1','i2','r1','r1','r2','t','l','h']
     spawnPoints = 7
     pointVals = {
@@ -621,12 +723,13 @@ def wave():
             spawnPoints -= pointVals[pick]
     for i in spawns:
         while True:
-            pos = random.choice(usedPositions)
+            pos = random.choice(positions)
             if pos not in usedPositions:
                 usedPositions.append(pos)
                 break
-        enemy = Enemy(pos,math_functions.hitboxesFromCircle(pos,radii[i]),eval(f'{i}i({pos})'),speeds[i],target[i],)
-        entityManager.add()
+        enemy = Enemy(pos,CircleHitboxes(pos,radii[i]),eval(f'{i}i({pos})'),speeds[i],target[i],hp[i],lambda self,fps: eval(f'{i}({self,fps})'))
+        entityManager.add(enemy)
+    global_vars.wave += 1
 
 
 

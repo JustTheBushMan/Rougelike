@@ -31,14 +31,14 @@ enemyPic = classes.DisplayImage([['normal',[classes.CircleImage([300,300],30,[15
 boxes = classes.CircleHitboxes([300,300],30)
 enemy = classes.Enemy([300,300],boxes,enemyPic,200,150,3,[])
 
-#heart = classes.Hearts()
+heart = classes.Hearts()
 
 pygame.mouse.set_visible(False)
 
 classes.entityManager.add(player)
 classes.entityManager.add(cursor)
-classes.entityManager.add(enemy)
-#classes.entityManager.add(heart)
+
+classes.entityManager.add(heart)
 
 
 
@@ -46,8 +46,8 @@ background = pygame.Surface(screen.get_size())
 background.fill((0, 0, 20))
 clock = pygame.time.Clock()
 pygame.mixer.init()
-#music = pygame.mixer.Sound(r"C:\Users\IanSt\Downloads\Pygame Sprites\335571__magntron__gamemusic.mp3")
-#music.play(-1)
+music = pygame.mixer.Sound(r"C:\Users\IanSt\PycharmProjects\Rougelike\Rougelike Sprites\335571__magntron__gamemusic.mp3")
+music.play(-1)
 
 while True:
     dt = clock.tick(60)
