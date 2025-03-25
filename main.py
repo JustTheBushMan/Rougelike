@@ -4,7 +4,7 @@ import global_vars
 import math_functions
 from global_vars import screen
 from pathlib import Path
-
+import os
 
 
 playerPos = [global_vars.DIMENSIONS[0]/2,global_vars.DIMENSIONS[1]/2]
@@ -31,14 +31,15 @@ enemyPic = classes.DisplayImage([['normal',[classes.CircleImage([300,300],30,[15
 boxes = classes.CircleHitboxes([300,300],30)
 enemy = classes.Enemy([300,300],boxes,enemyPic,200,150,3,[])
 
-heart = classes.Hearts()
+#heart = classes.Hearts()
 
 pygame.mouse.set_visible(False)
 
 classes.entityManager.add(player)
 classes.entityManager.add(cursor)
 
-classes.entityManager.add(heart)
+#classes.entityManager.add(heart)
+
 
 
 
@@ -46,7 +47,7 @@ background = pygame.Surface(screen.get_size())
 background.fill((0, 0, 20))
 clock = pygame.time.Clock()
 pygame.mixer.init()
-music = pygame.mixer.Sound(r"C:\Users\IanSt\PycharmProjects\Rougelike\Rougelike Sprites\335571__magntron__gamemusic.mp3")
+music = pygame.mixer.Sound(os.path.dirname(os.path.abspath(__file__)) + '\\Rougelike Sprites'+r"\335571__magntron__gamemusic.mp3")
 music.play(-1)
 
 while True:

@@ -98,6 +98,7 @@ class Bar(Image):
 
 class DisplayImage: # a list of lists of images and state call [[state1,[img1,img2,img3]],[state2,[img1,img2]]]
     def __init__(self,images,currentState):
+        print(images)
         self.state = currentState
         self.imgs = {}
         for i in range(len(images)):
@@ -359,9 +360,11 @@ class Enemy(Entity):
                         self.knockback = 10
         for entity in entityManager.classes["Enemy"].elements.values():
             if type(entity).__name__ == "Enemy" and entity != self:
+                    oldPos = self.position
                     if self.hitboxes.collideCheck(entity.hitboxes):
-                        self.position = math_functions.vectAdd(self.position,math_functions.normalizeVect([self.position[0]-entity.position[0],self.position[1]-entity.position[1]],10))
+                        self.position = math_functions.vectAdd(self.position,math_functions.normalizeVect([self.position[0]-entity.position[0],self.position[1]-entity.position[1]],2))
                     self.position = math_functions.bound(self.position,self.hitboxes.boxes[0].width)
+                    self.displayImages.translate([self.position[0]-oldPos[0],self.position[1]-oldPos[1]])
 
 class Projectile(Entity):
     def __init__(self, startingMomentum, position, hitboxes, collisionDetection, displayImages,friendly,impactDeath):
@@ -475,7 +478,6 @@ class EntityHandler:
         }
         self.waveCooldown = -1
     def update(self,fps):
-        print(self.waveCooldown)
         for i in self.classes.values():
             i.updateClassEntities(fps)
         for i in self.classes.values():
@@ -538,11 +540,11 @@ def i1i(pos):
         [
             ['normal',[
                 CircleImage(pos,30,[0,255,255],0),
-                CircleImage(pos,30,[0,170,170],3),
+                CircleImage(pos,30,[0,170,170],3)
             ],
              'hit',[
                 CircleImage(pos,30,[100,255,255],0),
-                CircleImage(pos,30,[60, 200, 200],3),
+                CircleImage(pos,30,[60, 200, 200],3)
              ]
              ]
         ],'normal'
