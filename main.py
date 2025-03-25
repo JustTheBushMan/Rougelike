@@ -31,14 +31,14 @@ enemyPic = classes.DisplayImage([['normal',[classes.CircleImage([300,300],30,[15
 boxes = classes.CircleHitboxes([300,300],30)
 enemy = classes.Enemy([300,300],boxes,enemyPic,200,150,3,[])
 
-#heart = classes.Hearts()
+heart = classes.Hearts()
 
 pygame.mouse.set_visible(False)
 
 classes.entityManager.add(player)
 classes.entityManager.add(cursor)
 
-#classes.entityManager.add(heart)
+classes.entityManager.add(heart)
 
 
 
