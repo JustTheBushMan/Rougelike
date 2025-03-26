@@ -505,7 +505,14 @@ def i2(self,fps):
 
 
 def r1(self,fps):
-    pass
+    if 'cooldown' not in self.dict:
+        self.dict['cooldown'] = 3
+    self.dict['cooldown'] = max(0,self.dict['cooldown']-1/fps)
+    if self.dict['cooldown'] == 0:
+        self.dict['cooldown'] = 3
+        playerPos = entityManager.classes['Player'].elements[0].position
+        vect = [playerPos[0]-self.position[0],playerPos[1]-self.position[1]]
+
 
 
 def r2(self,fps):
@@ -684,17 +691,6 @@ hp = {
     'l': 1
 }
 
-i1 = i1
-i2 = i2
-r1 = r1
-r2 = r2
-t = t
-b1 = b1
-b2 = b2
-b3 = b3
-h = h
-l = l
-
 def wave():
     probList = ['i1','i1','i2','r1','r1','r2','t','l','h']
     spawnPoints = 7
@@ -730,14 +726,5 @@ def wave():
         for _ in 1 if i != 'l' else range(7):
             entityManager.add(enemy)
     global_vars.wave += 1
-
-
-
-
-
-
-
-
-##########################################################################################################
 
 entityManager = EntityHandler()
