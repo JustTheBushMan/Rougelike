@@ -199,9 +199,9 @@ class Entity:
 class Hearts(Entity):
     def __init__(self):
         positions = [
-            [20,1010],
-            [20,940],
-            [20,870]
+            [20,990],
+            [20,920],
+            [20,850]
         ]
         image = DisplayImage( [
             [3,[Picture(positions[0],global_vars.HEART),Picture(positions[1],global_vars.HEART),Picture(positions[2],global_vars.HEART)]],
@@ -538,12 +538,12 @@ def i1i(pos):
     return DisplayImage(
         [
             ['normal',[
-                CircleImage(pos,30,[0,255,255],0),
-                CircleImage(pos,30,[0,170,170],3)
+                CircleImage(pos,30,[60,0,150],0),
+                CircleImage(pos,30,[40,0,110],3)
             ]],
              ['hit',[
-                CircleImage(pos,30,[100,255,255],0),
-                CircleImage(pos,30,[60, 200, 200],3)
+                CircleImage(pos,30,[40,0,130],0),
+                CircleImage(pos,30,[20, 0, 70],3)
              ]
              ]
         ],'normal'
@@ -553,12 +553,12 @@ def i2i(pos):
     return DisplayImage(
         [
             ['normal', [
-                CircleImage(pos, 40, [0, 255, 255], 0),
-                CircleImage(pos, 40, [0, 170, 170], 3),
+                CircleImage(pos, 40, [60,0,150], 0),
+                CircleImage(pos, 40, [40,0,110], 3),
             ]],
              ['hit', [
-                 CircleImage(pos, 40, [100, 255, 255], 0),
-                 CircleImage(pos, 40, [60, 200, 200], 3),
+                 CircleImage(pos, 40, [40,0,110], 0),
+                 CircleImage(pos, 40, [20, 0, 70], 3),
              ]
              ]
         ],'normal'
@@ -598,12 +598,12 @@ def ti(pos):
     return DisplayImage(
         [
             ['normal', [
-                CircleImage(pos, 50, [120, 20, 20], 0),
+                CircleImage(pos, 50, [120, 20, 180], 0),
                 CircleImage(pos, 50, [80, 10, 80], 3),
             ]],
              ['hit', [
                  CircleImage(pos, 50, [180, 40, 180], 0),
-                 CircleImage(pos, 50, [120, 20, 20], 3),
+                 CircleImage(pos, 50, [120, 20, 120], 3),
              ]
              ]
         ],'normal'
