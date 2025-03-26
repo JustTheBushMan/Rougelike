@@ -512,15 +512,40 @@ def r1(self,fps):
         self.dict['cooldown'] = 3
         playerPos = entityManager.classes['Player'].elements[0].position
         vect = [playerPos[0]-self.position[0],playerPos[1]-self.position[1]]
+        movement = math_functions.normalizeVect(vect,10)
+        image = DisplayImage(['normal',[CircleImage(newPos,10,[150,40,40])]],'normal')
+        bullet = Projectile(movement, newPos, CircleHitboxes(newPos,10), False, image, False, True)
+        entityManager.add(copy.deepcopy(bullet))
 
 
 
 def r2(self,fps):
-    pass
+    if 'cooldown' not in self.dict:
+        self.dict['cooldown'] = 3
+    self.dict['cooldown'] = max(0,self.dict['cooldown']-1/fps)
+    if self.dict['cooldown'] == 0:
+        self.dict['cooldown'] = 3
+        playerPos = entityManager.classes['Player'].elements[0].position
+        vect = [playerPos[0]-self.position[0],playerPos[1]-self.position[1]]
+        movement = math_functions.normalizeVect(vect,10)
+        newPos = [self.pos[0]+vect[0],self.pos[1]+vect[1]]
+        image = DisplayImage(['normal',[CircleImage(newPos,10,[150,40,40])]],'normal')
+        bullet = Projectile(movement, newPos, CircleHitboxes(newPos,10), False, image, False, True)
+        for a in (-11.25,0,11.25):
+            bullet.position = math_functions.rotate(newPos,a,self.position)
+            bullet.startingMomentum = math_functions.rotate(movement,a,self.position)
+            entityManager.add(copy.deepcopy(bullet))
 
 
 def t(self,fps):
-    pass
+    if self.kill:
+        image = DisplayImage(['normal',[CircleImage(self.position,10,[150,40,40])]],'normal')
+        bullet = Projectile([10,0], self.position, CircleHitboxes(self.position,10), False, image, False, True)
+        NUM_BULLETS = 10
+        for a in range(0,360,360/NUM_BULLETS):
+            bullet.startingMomentum = math_functions.rotate([0,10],a,self.position)
+            entityManager.add(copy.deepcopy(bullet))
+
 
 
 def b1(self,fps):
