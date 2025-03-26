@@ -98,7 +98,6 @@ class Bar(Image):
 
 class DisplayImage: # a list of lists of images and state call [[state1,[img1,img2,img3]],[state2,[img1,img2]]]
     def __init__(self,images,currentState):
-        print(images)
         self.state = currentState
         self.imgs = {}
         for i in range(len(images)):
@@ -541,8 +540,8 @@ def i1i(pos):
             ['normal',[
                 CircleImage(pos,30,[0,255,255],0),
                 CircleImage(pos,30,[0,170,170],3)
-            ],
-             'hit',[
+            ]],
+             ['hit',[
                 CircleImage(pos,30,[100,255,255],0),
                 CircleImage(pos,30,[60, 200, 200],3)
              ]
@@ -556,8 +555,8 @@ def i2i(pos):
             ['normal', [
                 CircleImage(pos, 40, [0, 255, 255], 0),
                 CircleImage(pos, 40, [0, 170, 170], 3),
-            ],
-             'hit', [
+            ]],
+             ['hit', [
                  CircleImage(pos, 40, [100, 255, 255], 0),
                  CircleImage(pos, 40, [60, 200, 200], 3),
              ]
@@ -571,8 +570,8 @@ def r1i(pos):
             ['normal', [
                 CircleImage(pos, 30, [100, 20, 100], 0),
                 CircleImage(pos, 30, [70, 10, 70], 3),
-            ],
-             'hit', [
+            ]],
+             ['hit', [
                  CircleImage(pos, 30, [150, 30, 150], 0),
                  CircleImage(pos, 30, [110, 20, 110], 3),
              ]
@@ -586,8 +585,8 @@ def r2i(pos):
             ['normal', [
                 CircleImage(pos, 40, [100, 20, 100], 0),
                 CircleImage(pos, 40, [70, 10, 70], 3),
-            ],
-             'hit', [
+            ]],
+             ['hit', [
                  CircleImage(pos, 40, [150, 30, 150], 0),
                  CircleImage(pos, 40, [110, 20, 110], 3),
              ]
@@ -601,8 +600,8 @@ def ti(pos):
             ['normal', [
                 CircleImage(pos, 50, [120, 20, 20], 0),
                 CircleImage(pos, 50, [80, 10, 80], 3),
-            ],
-             'hit', [
+            ]],
+             ['hit', [
                  CircleImage(pos, 50, [180, 40, 180], 0),
                  CircleImage(pos, 50, [120, 20, 20], 3),
              ]
@@ -616,8 +615,8 @@ def hi(pos):
             ['normal', [
                 CircleImage(pos, 30, [50, 100, 90], 0),
                 CircleImage(pos, 30, [30, 80, 70], 3),
-            ],
-             'hit', [
+            ]],
+             ['hit', [
                  CircleImage(pos, 30, [80, 130, 120], 0),
                  CircleImage(pos, 30, [50, 100, 90], 3),
              ]
@@ -631,8 +630,8 @@ def li(pos):
             ['normal', [
                 CircleImage(pos, 20, [200, 0, 140], 0),
                 CircleImage(pos, 20, [150, 0, 90], 3),
-            ],
-             'hit', [
+            ]],
+             ['hit', [
                  CircleImage(pos, 20, [250, 0, 190], 0),
                  CircleImage(pos, 20, [200, 0, 140], 3),
              ]
