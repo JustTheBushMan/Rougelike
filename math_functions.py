@@ -9,6 +9,7 @@ def hitboxesFromCircle(center,radius):
 def vectAdd(vect1,vect2):
     return [vect1[0]+vect2[0],vect1[1]+vect2[1]]
 
+
 def pythag(point1,point2):
     return math.sqrt((point1[0]-point2[0])**2+(point1[1]-point2[1])**2)
 
@@ -28,7 +29,16 @@ def mixColors(colorsAndWeights):
 
 def normalizeVect(vect,maxDist):
     dist = pythag(vect,[0,0])
-    return [vect[0]/dist*maxDist,vect[1]/dist*maxDist]
+    returnVect = [0,0]
+    try:
+        returnVect[0] = vect[0]/dist*maxDist
+    except:
+        returnVect[0] = 0
+    try:
+        returnVect[1] = vect[1]/dist*maxDist
+    except:
+        returnVect[1] = 0
+    return returnVect
 
 def bound(pos,radius):
     x = max(radius,min(pos[0],global_vars.DIMENSIONS[0]-radius))

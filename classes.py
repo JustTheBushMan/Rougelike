@@ -680,7 +680,6 @@ target = {
     'l': 0
 }
 
-#todo
 hp = {
     'i1': 4,
     'i2': 7,
@@ -691,9 +690,22 @@ hp = {
     'l': 1
 }
 
+def lpos(pos):
+    return [
+        pos,
+        [pos[0],pos[1]+20],
+        [pos[0],pos[1]-20],
+        [pos[0]+20,pos[1]],
+        [pos[0]-20,pos[1]],
+        [pos[0]+15,pos[1]+15],
+        [pos[0]+15,pos[1]-15],
+        [pos[0]-15,pos[1]+15],
+        [pos[0]-15,pos[1]-15]
+    ]
+
 def wave():
     probList = ['i1','i1','i2','r1','r1','r2','t','l','h']
-    spawnPoints = 7
+    spawnPoints = 10
     pointVals = {
         'i1': 1,
         'i2': 2,
@@ -723,8 +735,10 @@ def wave():
                 usedPositions.append(pos)
                 break
         enemy = Enemy(pos,CircleHitboxes(pos,radii[i]),eval(f'{i}i({pos})'),speeds[i],target[i],hp[i],lambda self,fps: eval(f'{i}({self,fps})'))
-        for _ in 1 if i != 'l' else range(7):
-            entityManager.add(enemy)
+        if i != 'l':
+            entityManager.add(copy.deepcopy(enemy))
+        else:
+            for newPos in lpos(pos):
     global_vars.wave += 1
 
 entityManager = EntityHandler()
