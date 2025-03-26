@@ -653,37 +653,35 @@ radii = {
 
 }
 
-#todo
 speeds = { 
-    'i1': 100,
-    'i2': 100,
+    'i1': 200,
+    'i2': 175,
     'r1': 100,
-    'r2': 100,
-    't': 100,
+    'r2': 75,
+    't': 125,
     'h' : 100,
-    'l': 100
+    'l': 250
 }
 
-#todo
 target = { 
     'i1': 0,
     'i2': 0,
-    'r1': 0,
-    'r2': 0,
+    'r1': 600,
+    'r2': 650,
     't': 0,
-    'h' : 0,
+    'h' : 400,
     'l': 0
 }
 
 #todo
 hp = {
-    'i1': 3,
-    'i2': 3,
+    'i1': 4,
+    'i2': 7,
     'r1': 3,
-    'r2': 3,
-    't': 3,
-    'h' : 3,
-    'l': 3
+    'r2': 5,
+    't': 12,
+    'h' : 4,
+    'l': 1
 }
 
 i1 = i1
@@ -729,7 +727,8 @@ def wave():
                 usedPositions.append(pos)
                 break
         enemy = Enemy(pos,CircleHitboxes(pos,radii[i]),eval(f'{i}i({pos})'),speeds[i],target[i],hp[i],lambda self,fps: eval(f'{i}({self,fps})'))
-        entityManager.add(enemy)
+        for _ in 1 if i != 'l' else range(7):
+            entityManager.add(enemy)
     global_vars.wave += 1
 
 
