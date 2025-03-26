@@ -734,11 +734,14 @@ def wave():
             if pos not in usedPositions:
                 usedPositions.append(pos)
                 break
-        enemy = Enemy(pos,CircleHitboxes(pos,radii[i]),eval(f'{i}i({pos})'),speeds[i],target[i],hp[i],lambda self,fps: eval(f'{i}({self,fps})'))
         if i != 'l':
+            enemy = Enemy(pos,CircleHitboxes(pos,radii[i]),eval(f'{i}i({pos})'),speeds[i],target[i],hp[i],lambda self,fps: eval(f'{i}({self,fps})'))
             entityManager.add(copy.deepcopy(enemy))
         else:
             for newPos in lpos(pos):
+                enemy = Enemy(newPos,CircleHitboxes(newPos,radii[i]),eval(f'{i}i({newPos})'),speeds[i],target[i],hp[i],lambda self,fps: eval(f'{i}({self,fps})'))
+                entityManager.add(copy.deepcopy(enemy))
+                
     global_vars.wave += 1
 
 entityManager = EntityHandler()
