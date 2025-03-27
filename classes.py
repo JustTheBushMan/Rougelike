@@ -257,6 +257,7 @@ class Player(Entity):
         self.dashTime = .2
         self.dashMomentum = None
         self.knockbackMomentum = [0,0]
+        self.dashInvulnerability = False
     def getMovement(self):
         keys = pygame.key.get_pressed()
         x = keys[pygame.K_d]-keys[pygame.K_a]
@@ -356,7 +357,7 @@ class Enemy(Entity):
                                 entity.kill = True
         for entity in entityManager.classes["Player"].elements.values():
             if type(entity).__name__ == "Player":
-                    if self.hitboxes.collideCheck(entity.hitboxes):
+                    if self.hitboxes.collideCheck(entity.hitboxes) and not (entity.dashInvulnerability and entity.dash != 0):
                         self.knockback = 10
         for entity in entityManager.classes["Enemy"].elements.values():
             if type(entity).__name__ == "Enemy" and entity != self:
@@ -570,6 +571,9 @@ def h(self,fps):
     if self.dict['cooldown'] == 0:
         missingHealth,idx = 0,None
         for element in entityManager.classes['Enemy'].elements.keys():
+            if entityManager.classes['Enemy'].elements[element].maxHealth - entityManager.classes['Enemy'].elements[element].health < missingHealth:
+                missingHealth = entityManager.classes['Enemy'].elements[element].maxHealth - entityManager.classes['Enemy'].elements[element].health
+                idx = element
 
 def l(self,fps):
     pass
