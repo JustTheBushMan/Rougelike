@@ -15,8 +15,7 @@ playerPics = [
               ]
 
 
-bulletPic = [classes.CircleImage([0,0],15,[255,255,255],0)]
-playerGun = classes.Gun(.6,bulletPic,60,10)
+playerGun = classes.Gun(.6,100,10)
 
 
 cursor = classes.Cursor()

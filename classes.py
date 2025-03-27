@@ -335,6 +335,7 @@ class Enemy(Entity):
                 self.position[x] = global_vars.DIMENSIONS[x]-30
             self.displayImages.translate(mom)
             self.hitboxes.recenter(self.position)
+            self.lamdas(self,fps)
     def checkCollisions(self):
         for i in self.hitBy:
             i[1] -= 1
@@ -400,12 +401,10 @@ class Projectile(Entity):
                     self.kill = True
 
 class Gun:
-    def __init__(self,fireRate,displayImages,bulletSpeed,speedMod):
+    def __init__(self,fireRate,bulletSpeed,speedMod):
         self.fireRate = fireRate
         self.bulletSpeed = bulletSpeed
         self.speedMod = speedMod
-        self.displayImages = displayImages
-        self.displayImages = displayImages
         self.cooldown = 0
         self.spread = 1
     def update(self,fps,pos):
@@ -419,8 +418,8 @@ class Gun:
             movement = [-movement[0],-movement[1]]
             movement = math_functions.rotate(movement,random.randint(-self.spread,self.spread),pos)
             newPos = [pos[0] - movement[0]/12, pos[1] - movement[1]/12]
-            image = DisplayImage([['normal',[CircleImage(newPos,10,[255,255,255],0)]]],'normal')
-            bullet = Projectile(movement, newPos, CircleHitboxes(newPos,10), False, image, True, True)
+            image = DisplayImage([['normal',[CircleImage(newPos,15,[255,255,255],0)]]],'normal')
+            bullet = Projectile(movement, newPos, CircleHitboxes(newPos,15), False, image, True, True)
             entityManager.add(copy.deepcopy(bullet))
 
 class ClassEntityHandler:
@@ -468,10 +467,10 @@ class ClassEntityHandler:
 class EntityHandler:
     def __init__(self):
         self.classes = {
+            'Burst': ClassEntityHandler(),
             'Player':ClassEntityHandler(),
             'Projectile': ClassEntityHandler(),
             'Enemy': ClassEntityHandler(),
-            'Burst': ClassEntityHandler(),
             'Cursor': ClassEntityHandler(),
             'Hearts': ClassEntityHandler()
         }
@@ -506,44 +505,48 @@ def i2(self,fps):
 
 def r1(self,fps):
     if 'cooldown' not in self.dict:
-        self.dict['cooldown'] = 3
+        self.dict['cooldown'] = random.randint(2,4)
     self.dict['cooldown'] = max(0,self.dict['cooldown']-1/fps)
     if self.dict['cooldown'] == 0:
-        self.dict['cooldown'] = 3
+        self.dict['cooldown'] = random.randint(2,4)
         playerPos = entityManager.classes['Player'].elements[0].position
         vect = [playerPos[0]-self.position[0],playerPos[1]-self.position[1]]
-        movement = math_functions.normalizeVect(vect,10)
-        image = DisplayImage(['normal',[CircleImage(newPos,10,[150,40,40])]],'normal')
-        bullet = Projectile(movement, newPos, CircleHitboxes(newPos,10), False, image, False, True)
+        movement = math_functions.normalizeVect(vect,400)
+        movement = [-movement[0],-movement[1]]
+        newPos = [self.position[0]-movement[0]/8,self.position[1]-movement[1]/8]
+        image = DisplayImage([['normal',[CircleImage(newPos,15,[150,40,40])]]],'normal')
+        bullet = Projectile(movement, newPos, CircleHitboxes(newPos,15), False, image, False, True)
         entityManager.add(copy.deepcopy(bullet))
 
 
 
 def r2(self,fps):
     if 'cooldown' not in self.dict:
-        self.dict['cooldown'] = 3
-    self.dict['cooldown'] = max(0,self.dict['cooldown']-1/fps)
+        self.dict['cooldown'] = random.randint(2,4)
+    self.dict['cooldown'] = max(0, self.dict['cooldown'] - 1 / fps)
     if self.dict['cooldown'] == 0:
-        self.dict['cooldown'] = 3
-        playerPos = entityManager.classes['Player'].elements[0].position
-        vect = [playerPos[0]-self.position[0],playerPos[1]-self.position[1]]
-        movement = math_functions.normalizeVect(vect,10)
-        newPos = [self.pos[0]+vect[0],self.pos[1]+vect[1]]
-        image = DisplayImage(['normal',[CircleImage(newPos,10,[150,40,40])]],'normal')
-        bullet = Projectile(movement, newPos, CircleHitboxes(newPos,10), False, image, False, True)
-        for a in (-11.25,0,11.25):
-            bullet.position = math_functions.rotate(newPos,a,self.position)
-            bullet.startingMomentum = math_functions.rotate(movement,a,self.position)
+        self.dict['cooldown'] = random.randint(2,4)
+        for a in (-15,0,15):
+            playerPos = entityManager.classes['Player'].elements[0].position
+            playerPos = math_functions.rotate(playerPos, a, self.position)
+            vect = [playerPos[0] - self.position[0], playerPos[1] - self.position[1]]
+            movement = math_functions.normalizeVect(vect, 400)
+            movement = [-movement[0], -movement[1]]
+            newPos = [self.position[0] - movement[0] / 8, self.position[1] - movement[1] / 8]
+            image = DisplayImage([['normal', [CircleImage(newPos, 15, [150, 40, 40])]]], 'normal')
+            bullet = Projectile(movement, newPos, CircleHitboxes(newPos, 15), False, image, False, True)
             entityManager.add(copy.deepcopy(bullet))
 
 
-def t(self,fps):
+def t(self, fps):
     if self.kill:
-        image = DisplayImage(['normal',[CircleImage(self.position,10,[150,40,40])]],'normal')
-        bullet = Projectile([10,0], self.position, CircleHitboxes(self.position,10), False, image, False, True)
-        NUM_BULLETS = 10
-        for a in range(0,360,360/NUM_BULLETS):
-            bullet.startingMomentum = math_functions.rotate([0,10],a,self.position)
+        for angle in range(0, 360, 36):  # 10 equally spaced angles
+            vect = [0,100]
+            vect = math_functions.rotate(vect, angle, [0,0])
+            movement = math_functions.normalizeVect(vect, 150)
+            newPos = [self.position[0] - movement[0] / 8, self.position[1] - movement[1] / 8]
+            image = DisplayImage([['normal', [CircleImage(newPos, 15, [150, 40, 40])]]], 'normal')
+            bullet = Projectile(movement, newPos, CircleHitboxes(newPos, 15), False, image, False, True)
             entityManager.add(copy.deepcopy(bullet))
 
 
@@ -671,7 +674,15 @@ def li(pos):
         ],'normal'
     )
 
-
+lambdas = {
+    'i1':lambda self,fps: i1(self,fps),
+    'i2':lambda self,fps: i2(self,fps),
+    'r1':lambda self,fps: r1(self,fps),
+    'r2':lambda self,fps: r2(self,fps),
+    't':lambda self,fps: t(self,fps),
+    'h':lambda self,fps: h(self,fps),
+    'l':lambda self,fps: l(self,fps)
+}
 
 
 radii = {
@@ -760,11 +771,11 @@ def wave():
                 usedPositions.append(pos)
                 break
         if i != 'l':
-            enemy = Enemy(pos,CircleHitboxes(pos,radii[i]),eval(f'{i}i({pos})'),speeds[i],target[i],hp[i],lambda self,fps: eval(f'{i}({self,fps})'))
+            enemy = Enemy(pos,CircleHitboxes(pos,radii[i]),eval(f'{i}i({pos})'),speeds[i],target[i],hp[i],lambdas[i])
             entityManager.add(copy.deepcopy(enemy))
         else:
             for newPos in lpos(pos):
-                enemy = Enemy(newPos,CircleHitboxes(newPos,radii[i]),eval(f'{i}i({newPos})'),speeds[i],target[i],hp[i],lambda self,fps: eval(f'{i}({self,fps})'))
+                enemy = Enemy(newPos,CircleHitboxes(newPos,radii[i]),eval(f'{i}i({newPos})'),speeds[i],target[i],hp[i],lambdas[i])
                 entityManager.add(copy.deepcopy(enemy))
                 
     global_vars.wave += 1

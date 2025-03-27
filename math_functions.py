@@ -22,6 +22,9 @@ def rotate(point, angle, center):
     y_new = x * math.sin(rad) + y * math.cos(rad)
     return x_new + cx, y_new + cy
 
+
+
+
 def mixColors(colorsAndWeights):
     numColors = len(colorsAndWeights)
     weightTotal = sum(colorsAndWeights[i][1] for i in range(numColors))
