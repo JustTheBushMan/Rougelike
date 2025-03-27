@@ -564,7 +564,12 @@ def b3(self,fps):
 
 
 def h(self,fps):
-    pass
+    if 'cooldown' not in self.dict:
+        self.dict['cooldown'] = random.randint(5,7)
+    self.dict['cooldown'] = max(0, self.dict['cooldown'] - 1 / fps)
+    if self.dict['cooldown'] == 0:
+        missingHealth,idx = 0,None
+        for element in entityManager.classes['Enemy'].elements.keys():
 
 def l(self,fps):
     pass
