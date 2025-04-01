@@ -21,11 +21,8 @@ playerGun = classes.Gun(.6,100,10)
 cursor = classes.Cursor()
 player = classes.Player(playerPos,global_vars.PLAYER_HP,global_vars.PLAYER_HP,playerBox,playerPics,global_vars.PLAYER_SPEED,playerGun)
 
-
 enemyPic = classes.DisplayImage([['normal',[classes.CircleImage([300,300],30,[150,0,0],0)]],
                                  ['hit',[classes.CircleImage([300,300],30,[255,0,0],0)]]], 'normal')
-
-
 
 boxes = classes.CircleHitboxes([300,300],30)
 enemy = classes.Enemy([300,300],boxes,enemyPic,200,150,3,[])
@@ -57,3 +54,7 @@ while True:
     screen.blit(background, (0, 0))
     classes.entityManager.render()
     pygame.display.flip()
+    if global_vars.HACKS and pygame.key.get_pressed()[pygame.K_n]:
+        for element in classes.entityManager.classes['Enemy'].elements:
+            if isinstance(element,classes.Entity):
+                element.kill = True

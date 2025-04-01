@@ -22,6 +22,7 @@ CURSOR_WIDTH = 5
 
 wave = 0
 
+HACKS = True
 RENDER_HITBOXES = False
 
 def scale(image,scaleFactor):

@@ -571,9 +571,15 @@ def h(self,fps):
     if self.dict['cooldown'] == 0:
         missingHealth,idx = 0,None
         for element in entityManager.classes['Enemy'].elements.keys():
-            if entityManager.classes['Enemy'].elements[element].maxHealth - entityManager.classes['Enemy'].elements[element].health < missingHealth:
+            if entityManager.classes['Enemy'].elements[element].maxHealth - entityManager.classes['Enemy'].elements[element].health > missingHealth and entityManager.classes['Enemy'].elements[element]!=self:
                 missingHealth = entityManager.classes['Enemy'].elements[element].maxHealth - entityManager.classes['Enemy'].elements[element].health
+                print(missingHealth)
                 idx = element
+        if idx != None:
+            entityManager.classes['Enemy'].elements[idx].health = max(entityManager.classes['Enemy'].elements[idx].maxHealth,entityManager.classes['Enemy'].elements[idx].health+4)
+            self.dict['cooldown'] = random.randint(5,7)
+            entityManager.add(Burst(entityManager.classes['Enemy'].elements[idx].position,25,[50, 100, 90]))
+
 
 def l(self,fps):
     pass
