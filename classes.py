@@ -226,6 +226,16 @@ class Burst(Entity):
             self.kill = True
         self.displayImages = DisplayImage( [['normal',[CircleImage(self.position,self.radius,self.color,5)]]],'normal')
 
+class Star(Entity):
+    def __init__(self, position,lifetime):
+        self.lifetime = lifetime
+        img = DisplayImage([['normal',[Picture(position,global_vars.STAR)]]],'normal')
+        super().__init__(position, False, [], img)
+    def update(self,fps):
+        self.lifetime = max(self.lifetime-1/fps,0)
+        if self.lifetime == 0:
+            self.kill = True
+
 class Cursor(Entity):
     def __init__(self):
         super().__init__([0,0],False,[],[])
@@ -473,7 +483,8 @@ class EntityHandler:
             'Projectile': ClassEntityHandler(),
             'Enemy': ClassEntityHandler(),
             'Cursor': ClassEntityHandler(),
-            'Hearts': ClassEntityHandler()
+            'Hearts': ClassEntityHandler(),
+            'Star': ClassEntityHandler()
         }
         self.waveCooldown = -1
     def update(self,fps):
@@ -579,6 +590,8 @@ def h(self,fps):
             entityManager.classes['Enemy'].elements[idx].health = max(entityManager.classes['Enemy'].elements[idx].maxHealth,entityManager.classes['Enemy'].elements[idx].health+4)
             self.dict['cooldown'] = random.randint(5,7)
             entityManager.add(Burst(entityManager.classes['Enemy'].elements[idx].position,25,[50, 100, 90]))
+            for i in (self.position,entityManager.classes['Enemy'].elements[idx].position):
+                entityManager.add(Star([i[0]+10,i[0]+10],random.randrange(10,20)/10))
 
 
 def l(self,fps):
