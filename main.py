@@ -19,7 +19,7 @@ playerGun = classes.Gun(.6,100,10)
 
 
 cursor = classes.Cursor()
-player = classes.Player(playerPos,global_vars.PLAYER_HP,global_vars.PLAYER_HP,playerBox,playerPics,global_vars.PLAYER_SPEED,playerGun)
+player = classes.Player(playerPos,global_vars.PLAYER_HP,global_vars.PLAYER_HP,playerBox,global_vars.PLAYER_SPEED,playerGun)
 
 enemyPic = classes.DisplayImage([['normal',[classes.CircleImage([300,300],30,[150,0,0],0)]],
                                  ['hit',[classes.CircleImage([300,300],30,[255,0,0],0)]]], 'normal')

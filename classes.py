@@ -199,9 +199,9 @@ class Entity:
 class Hearts(Entity):
     def __init__(self):
         positions = [
-            [20,990],
-            [20,920],
-            [20,850]
+            [12,990],
+            [12,920],
+            [12,850]
         ]
         image = DisplayImage( [
             [3,[Picture(positions[0],global_vars.HEART),Picture(positions[1],global_vars.HEART),Picture(positions[2],global_vars.HEART)]],
@@ -255,8 +255,11 @@ class Cursor(Entity):
             self.displayImages.append(LineImage( start, end, self.color, self.width))
 
 class Player(Entity):
-    def __init__(self, position, hp, maxhp, hitboxes, displayImages,speed,gun):
-        super().__init__(position, True, hitboxes, displayImages)
+    def __init__(self, position, hp, maxhp, hitboxes,speed,gun):
+        super().__init__(position, True, hitboxes, DisplayImage(
+            [['normal',[CircleGradient(global_vars.PLAYER_RADIUS, global_vars.PLAYER_INSIDE_COLOR, global_vars.PLAYER_OUTSIDE_COLOR,[global_vars.DIMENSIONS[0] / 2, global_vars.DIMENSIONS[1] / 2]),CircleImage([global_vars.DIMENSIONS[0] / 2, global_vars.DIMENSIONS[1] / 2], global_vars.PLAYER_RADIUS,global_vars.PLAYER_OUTSIDE_COLOR, 7)]],
+             ['hit',[CircleGradient(global_vars.PLAYER_RADIUS, global_vars.PLAYER_INSIDE_COLOR_HIT, global_vars.PLAYER_OUTSIDE_COLOR_HIT,[global_vars.DIMENSIONS[0] / 2, global_vars.DIMENSIONS[1] / 2]),CircleImage([global_vars.DIMENSIONS[0] / 2, global_vars.DIMENSIONS[1] / 2], global_vars.PLAYER_RADIUS,global_vars.PLAYER_OUTSIDE_COLOR_HIT, 7)]]]
+        ,'normal'))
         self.hp = hp
         self.maxhp = maxhp
         self.speed = speed * 50
@@ -294,8 +297,7 @@ class Player(Entity):
             max(global_vars.PLAYER_RADIUS,min(self.position[1]+translation[1],global_vars.DIMENSIONS[1]-global_vars.PLAYER_RADIUS))-self.position[1]
         ]
         self.position = [self.position[0]+translation[0],self.position[1]+translation[1]]
-        for i in self.displayImages:
-            translateImage(i,translation)
+        self.displayImages.translate(translation)
         self.hitboxes.recenter(self.position)
         self.gun.update(fps,self.position)
 
@@ -303,6 +305,7 @@ class Enemy(Entity):
     def __init__(self,position,hitboxes,displayImages,speed,playerTargetDistance,health,lamdas):
         super().__init__(position,False,hitboxes,displayImages)
         self.speed = speed
+        self.lastHit = 0
         self.playerTargetDistance = playerTargetDistance
         self.maxHealth = health
         self.health = health
@@ -313,6 +316,7 @@ class Enemy(Entity):
         self.knockback = 0
     def update(self, fps):
         self.checkCollisions()
+        self.lastHit = max(0, self.stateFor - 1 / fps)
         self.stateFor = max(0, self.stateFor - 1 / fps)
         if self.stateFor == 0:
             self.displayImages.state = 'normal'
@@ -357,6 +361,7 @@ class Enemy(Entity):
                 if entity.friendly and entity.signature not in [i[0] for i in self.hitBy]:
                         if self.hitboxes.collideCheck(entity.hitboxes):
                             self.knockback = 3
+                            self.lastHit = 10
                             self.displayImages.state="hit"
                             self.stateFor = .2
                             self.health -= entity.damage
@@ -582,16 +587,15 @@ def h(self,fps):
     if self.dict['cooldown'] == 0:
         missingHealth,idx = 0,None
         for element in entityManager.classes['Enemy'].elements.keys():
-            if entityManager.classes['Enemy'].elements[element].maxHealth - entityManager.classes['Enemy'].elements[element].health > missingHealth and entityManager.classes['Enemy'].elements[element]!=self:
+            if entityManager.classes['Enemy'].elements[element].maxHealth - entityManager.classes['Enemy'].elements[element].health > missingHealth and entityManager.classes['Enemy'].elements[element]!=self and entityManager.classes['Enemy'].elements[element].lastHit == 0:
                 missingHealth = entityManager.classes['Enemy'].elements[element].maxHealth - entityManager.classes['Enemy'].elements[element].health
-                print(missingHealth)
                 idx = element
         if idx != None:
             entityManager.classes['Enemy'].elements[idx].health = max(entityManager.classes['Enemy'].elements[idx].maxHealth,entityManager.classes['Enemy'].elements[idx].health+4)
             self.dict['cooldown'] = random.randint(5,7)
             entityManager.add(Burst(entityManager.classes['Enemy'].elements[idx].position,25,[50, 100, 90]))
             for i in (self.position,entityManager.classes['Enemy'].elements[idx].position):
-                entityManager.add(Star([i[0]+10,i[0]+10],random.randrange(10,20)/10))
+                entityManager.add(Star(i,random.randrange(10,20)/10))
 
 
 def l(self,fps):
