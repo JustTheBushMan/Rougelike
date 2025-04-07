@@ -344,7 +344,7 @@ class Player(Entity):
                             self.invulnerability = 5
                         self.knockback = -10
 
-
+#
 class Enemy(Entity):
     def __init__(self,position,hitboxes,displayImages,speed,playerTargetDistance,health,lamdas):
         super().__init__(position,False,hitboxes,displayImages)
