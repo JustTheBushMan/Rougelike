@@ -258,8 +258,11 @@ class Player(Entity):
     def __init__(self, position, hp, maxhp, hitboxes,speed,gun):
         super().__init__(position, True, hitboxes, DisplayImage(
             [['normal',[CircleGradient(global_vars.PLAYER_RADIUS, global_vars.PLAYER_INSIDE_COLOR, global_vars.PLAYER_OUTSIDE_COLOR,[global_vars.DIMENSIONS[0] / 2, global_vars.DIMENSIONS[1] / 2]),CircleImage([global_vars.DIMENSIONS[0] / 2, global_vars.DIMENSIONS[1] / 2], global_vars.PLAYER_RADIUS,global_vars.PLAYER_OUTSIDE_COLOR, 7)]],
-             ['hit',[CircleGradient(global_vars.PLAYER_RADIUS, global_vars.PLAYER_INSIDE_COLOR_HIT, global_vars.PLAYER_OUTSIDE_COLOR_HIT,[global_vars.DIMENSIONS[0] / 2, global_vars.DIMENSIONS[1] / 2]),CircleImage([global_vars.DIMENSIONS[0] / 2, global_vars.DIMENSIONS[1] / 2], global_vars.PLAYER_RADIUS,global_vars.PLAYER_OUTSIDE_COLOR_HIT, 7)]]]
+             ['hit1',[CircleGradient(global_vars.PLAYER_RADIUS, global_vars.PLAYER_INSIDE_COLOR_HIT, global_vars.PLAYER_OUTSIDE_COLOR_HIT,[global_vars.DIMENSIONS[0] / 2, global_vars.DIMENSIONS[1] / 2]),CircleImage([global_vars.DIMENSIONS[0] / 2, global_vars.DIMENSIONS[1] / 2], global_vars.PLAYER_RADIUS,global_vars.PLAYER_OUTSIDE_COLOR_HIT, 7)]],
+             ['hit1',[CircleGradient(global_vars.PLAYER_RADIUS, global_vars.PLAYER_INSIDE_COLOR_HIT, global_vars.PLAYER_OUTSIDE_COLOR_HIT,[global_vars.DIMENSIONS[0] / 2, global_vars.DIMENSIONS[1] / 2]),CircleImage([global_vars.DIMENSIONS[0] / 2, global_vars.DIMENSIONS[1] / 2], global_vars.PLAYER_RADIUS,global_vars.PLAYER_OUTSIDE_COLOR_HIT, 7)]]  ]
         ,'normal'))
+        self.stateFor = 0
+        self.knockback = 1
         self.hp = hp
         self.maxhp = maxhp
         self.speed = speed * 50
@@ -269,8 +272,10 @@ class Player(Entity):
         self.dashCooldown = 0
         self.dashTime = .2
         self.dashMomentum = None
-        self.knockbackMomentum = [0,0]
         self.dashInvulnerability = False
+        self.hitBy = []
+        self.invulnerability = 0
+        self.fps = 0
     def getMovement(self):
         keys = pygame.key.get_pressed()
         x = keys[pygame.K_d]-keys[pygame.K_a]
@@ -280,6 +285,8 @@ class Player(Entity):
             y/=1.44
         return [x*self.speed,y*self.speed]
     def update(self,fps):
+        self.fps = fps
+        self.stateFor = max(0, self.stateFor - 1 / fps)
         self.dash = max(0,self.dash-1/fps)
         self.dashCooldown = max(0,self.dashCooldown-1/fps)
         diff = self.getMovement()
@@ -290,7 +297,7 @@ class Player(Entity):
             self.dashCooldown = self.dashCooldownMax + self.dashTime
         if self.dash > 0:
             translation = self.dashMomentum
-        translation = [translation[0]+self.knockbackMomentum[0],translation[1]+self.knockbackMomentum[1]]
+        translation = [translation[0]*self.knockback,translation[1]*self.knockback]
         translation = [translation[0]/fps,translation[1]/fps]
         translation = [
             max(global_vars.PLAYER_RADIUS,min(self.position[0]+translation[0],global_vars.DIMENSIONS[0]-global_vars.PLAYER_RADIUS))-self.position[0],
@@ -298,8 +305,45 @@ class Player(Entity):
         ]
         self.position = [self.position[0]+translation[0],self.position[1]+translation[1]]
         self.displayImages.translate(translation)
+        if self.stateFor == 0:
+            self.displayImages.state = 'normal'
+        else:
+            if self.displayImages.state == 'hit1':
+                self.displayImages.state = 'hit2'
+            else:
+                self.displayImages.state = 'hit1'
         self.hitboxes.recenter(self.position)
         self.gun.update(fps,self.position)
+        self.knockback = 1
+        self.checkCollisions()
+    def checkCollisions(self):
+        self.invulnerability = max(0,self.invulnerability-(1/self.fps))
+        for i in self.hitBy:
+            i[1] -= 1
+            if i[1] <= 0:
+                del i
+        for entity in entityManager.classes["Projectile"].elements.values():
+            if type(entity).__name__ == "Projectile":
+                if not entity.friendly and entity.signature not in [i[0] for i in self.hitBy]:
+                        if self.hitboxes.collideCheck(entity.hitboxes):
+                            self.knockback = 2
+                            self.invulnerability = 5
+                            self.displayImages.state="hit1"
+                            self.stateFor = 1
+                            self.hp -= 1
+                            sig = random.randrange(0,32767)
+                            self.hitBy.append([sig,10])
+                            entity.signature = sig
+                            if self.hp <= 0 and entity.dieOnImpact:
+                                entity.kill = True
+        for entity in entityManager.classes["Player"].elements.values():
+            if type(entity).__name__ == "Enemy":
+                    if self.hitboxes.collideCheck(entity.hitboxes) and not (entity.dashInvulnerability and entity.dash != 0):
+                        if self.invulnerability == 0:
+                            self.hp -= 1
+                            self.invulnerability = 5
+                        self.knockback = -10
+
 
 class Enemy(Entity):
     def __init__(self,position,hitboxes,displayImages,speed,playerTargetDistance,health,lamdas):
