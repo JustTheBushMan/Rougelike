@@ -42,7 +42,7 @@ HEART = pygame.image.load(SPRITE_BASE_PATH + r'\heart.png')
 HEART = scale(HEART,1/6)
 
 DEAD_HEART = pygame.image.load(SPRITE_BASE_PATH + r'\deadheart.png')
-DEAD_HEART = scale(DEAD_HEART,1/16)
+DEAD_HEART = scale(DEAD_HEART,1/6)
 
 STAR = pygame.image.load(SPRITE_BASE_PATH + r'\star.png')
 STAR = scale(STAR,1/16)
